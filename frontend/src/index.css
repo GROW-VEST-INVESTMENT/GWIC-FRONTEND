@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gwic-green: #0d5c33;
+  --color-gwic-light: #f4f9f5;
+  --color-gwic-accent: #2e7d32;
+}
+
+:root {
+  font-family: 'Segoe UI', Inter, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #1b2622;
+  background: #e7e7e7;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #e8e8e8;
+}
+
+button,
+a {
+  font: inherit;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}

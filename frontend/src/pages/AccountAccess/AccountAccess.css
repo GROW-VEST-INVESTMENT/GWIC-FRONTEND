@@ -1,0 +1,472 @@
+.access-page {
+  --access-forest: #003522;
+  --access-deep: #00271b;
+  --access-green: #007344;
+  --access-lime: #8be348;
+  min-height: 100vh;
+  background: #f5f8f5;
+  color: #102c22;
+}
+
+.access-header {
+  display: flex;
+  width: min(100% - 64px, 1240px);
+  min-height: 88px;
+  align-items: center;
+  justify-content: space-between;
+  margin-inline: auto;
+}
+
+.access-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #073c2a;
+  text-decoration: none;
+}
+
+.access-brand-mark {
+  width: 42px;
+  height: 42px;
+  color: #069144;
+}
+
+.access-brand strong,
+.access-brand small {
+  display: block;
+}
+
+.access-brand strong {
+  font-size: 1.45rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.access-brand small {
+  margin-top: 4px;
+  color: #557065;
+  font-size: 0.57rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.access-back {
+  color: #315447;
+  font-size: 0.9rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.access-back:hover,
+.access-switch a:hover {
+  color: var(--access-green);
+  text-decoration: underline;
+}
+
+.access-layout {
+  display: grid;
+  width: min(100% - 64px, 1240px);
+  min-height: min(760px, calc(100vh - 112px));
+  grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
+  margin: 0 auto 40px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 18px 60px rgba(9, 46, 31, 0.08);
+}
+
+.access-form-column {
+  padding: clamp(30px, 5vw, 64px) clamp(24px, 5vw, 72px);
+}
+
+.access-kicker,
+.aside-eyebrow {
+  color: #16824d;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.access-form-column h1 {
+  max-width: 540px;
+  margin-top: 12px;
+  color: #0b3425;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 780;
+  line-height: 1.08;
+}
+
+.access-intro {
+  max-width: 520px;
+  margin-top: 13px;
+  color: #586d63;
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+.access-steps {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 2vw, 28px);
+  margin: 27px 0 22px;
+  padding: 0;
+  color: #718278;
+  font-size: 0.78rem;
+  font-weight: 700;
+  list-style: none;
+}
+
+.access-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.access-steps li span {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border-radius: 50%;
+  background: #edf3ee;
+  color: #687c70;
+  font-size: 0.67rem;
+}
+
+.access-steps li.is-current {
+  color: #075b38;
+}
+
+.access-steps li.is-current span {
+  background: #075b38;
+  color: #fff;
+}
+
+.access-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.field-label {
+  margin: 15px 0 7px;
+  color: #253f33;
+  font-size: 0.83rem;
+  font-weight: 700;
+}
+
+.field-label span {
+  color: #829087;
+  font-weight: 400;
+}
+
+.access-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 13px;
+  border: 1px solid #d7e1da;
+  border-radius: 6px;
+  outline: none;
+  background: #fff;
+  color: #162c21;
+  font-size: 0.91rem;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.access-input::placeholder {
+  color: #98a59d;
+}
+
+.access-input:focus {
+  border-color: #16824d;
+  box-shadow: 0 0 0 3px rgba(22, 130, 77, 0.12);
+}
+
+select.access-input:invalid {
+  color: #98a59d;
+}
+
+.product-fieldset {
+  min-width: 0;
+  margin: 21px 0 2px;
+  padding: 0;
+  border: 0;
+}
+
+.product-fieldset legend {
+  margin-bottom: 10px;
+  color: #253f33;
+  font-size: 0.83rem;
+  font-weight: 700;
+}
+
+.product-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.product-choice {
+  display: flex;
+  min-height: 105px;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 10px;
+  border: 1px solid #dce6df;
+  border-radius: 6px;
+  background: #fbfdfb;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.product-choice.is-selected {
+  border-color: #16824d;
+  background: #f0f8f2;
+}
+
+.product-choice input {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  margin-top: 2px;
+  accent-color: #087544;
+}
+
+.product-choice-copy strong,
+.product-choice-copy small {
+  display: block;
+}
+
+.product-choice-copy strong {
+  color: #17392a;
+  font-size: 0.77rem;
+  line-height: 1.3;
+}
+
+.product-choice-copy small {
+  margin-top: 5px;
+  color: #63766b;
+  font-size: 0.67rem;
+  line-height: 1.4;
+}
+
+.preview-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 19px;
+  color: #607268;
+  font-size: 0.77rem;
+  line-height: 1.4;
+}
+
+.preview-notice input {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  accent-color: #087544;
+}
+
+.access-submit {
+  display: flex;
+  min-height: 51px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+  border: 0;
+  border-radius: 6px;
+  background: #007344;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.96rem;
+  font-weight: 750;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.access-submit:hover {
+  transform: translateY(-1px);
+  background: #005b37;
+}
+
+.access-submit span {
+  font-size: 1.3rem;
+  font-weight: 400;
+}
+
+.form-status {
+  margin-top: 13px;
+  padding: 11px 12px;
+  border-left: 3px solid #d6a332;
+  background: #fff8e7;
+  color: #604914;
+  font-size: 0.81rem;
+  line-height: 1.45;
+}
+
+.access-switch {
+  margin-top: 19px;
+  color: #68786f;
+  font-size: 0.84rem;
+}
+
+.access-switch a {
+  color: #087544;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.access-aside {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  padding: clamp(32px, 5vw, 64px);
+  background: linear-gradient(155deg, #003c27, #00291d 78%);
+  color: #fff;
+}
+
+.access-aside::before {
+  position: absolute;
+  z-index: -1;
+  top: -100px;
+  right: -150px;
+  width: 440px;
+  height: 440px;
+  content: '';
+  border: 1px solid rgba(141, 225, 91, 0.16);
+  border-radius: 50%;
+  box-shadow: 0 0 0 40px rgba(141, 225, 91, 0.035), 0 0 0 85px rgba(141, 225, 91, 0.025);
+}
+
+.aside-eyebrow {
+  color: #a6ed63;
+}
+
+.access-aside h2 {
+  max-width: 420px;
+  margin-top: 14px;
+  color: #f6fff7;
+  font-size: clamp(1.8rem, 3.3vw, 2.65rem);
+  font-weight: 750;
+  line-height: 1.08;
+}
+
+.access-aside > p:not(.access-disclaimer) {
+  max-width: 440px;
+  margin-top: 14px;
+  color: rgba(238, 255, 243, 0.78);
+  font-size: 0.93rem;
+  line-height: 1.6;
+}
+
+.aside-product {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 12px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(229, 255, 236, 0.18);
+}
+
+.aside-number {
+  padding-top: 2px;
+  color: #a6ed63;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.aside-product h3 {
+  color: #f5fff7;
+  font-size: 1.02rem;
+  font-weight: 750;
+}
+
+.aside-product p {
+  margin-top: 4px;
+  color: rgba(238, 255, 243, 0.75);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.access-disclaimer {
+  margin-top: 35px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(229, 255, 236, 0.18);
+  color: rgba(238, 255, 243, 0.67);
+  font-size: 0.73rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .access-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(270px, 0.8fr);
+  }
+
+  .product-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .product-choice {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .access-header,
+  .access-layout {
+    width: min(100% - 32px, 560px);
+  }
+
+  .access-header {
+    min-height: 74px;
+  }
+
+  .access-layout {
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 20px;
+  }
+
+  .access-form-column {
+    padding: 30px 24px 34px;
+  }
+
+  .access-aside {
+    padding: 32px 24px;
+  }
+
+  .access-aside h2 {
+    font-size: 1.9rem;
+  }
+
+  .aside-product {
+    margin-top: 22px;
+    padding-top: 15px;
+  }
+
+  .access-disclaimer {
+    margin-top: 24px;
+  }
+}
+
+@media (max-width: 380px) {
+  .access-header,
+  .access-layout {
+    width: calc(100% - 20px);
+  }
+
+  .access-form-column {
+    padding: 24px 16px 28px;
+  }
+
+  .access-steps {
+    gap: 10px;
+    font-size: 0.7rem;
+  }
+
+  .access-steps li {
+    gap: 4px;
+  }
+}
