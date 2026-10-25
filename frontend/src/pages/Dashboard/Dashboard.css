@@ -545,6 +545,223 @@
   line-height: 1.45;
 }
 
+.wallet-dialog.is-withdrawal {
+  width: min(100%, 500px);
+  gap: 14px;
+}
+
+.withdrawal-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.withdrawal-steps > div {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  color: #85958b;
+}
+
+.withdrawal-steps > div > span {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  place-items: center;
+  border: 1px solid #d5e1da;
+  border-radius: 50%;
+  background: #f4f7f5;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.withdrawal-steps > div.is-current {
+  color: #176d46;
+}
+
+.withdrawal-steps > div.is-current > span {
+  border-color: #176d46;
+  background: #e8f5ed;
+  color: #176d46;
+}
+
+.withdrawal-steps small {
+  overflow: hidden;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.withdrawal-balance {
+  display: grid;
+  gap: 3px;
+  padding: 13px 15px;
+  border: 1px solid #d9ebe0;
+  border-radius: 12px;
+  background: linear-gradient(120deg, #f0f8f3, #f8fbf9);
+}
+
+.withdrawal-balance > span,
+.withdrawal-balance > small,
+.withdrawal-review-amount > small,
+.withdrawal-review-amount > span,
+.withdrawal-recipient small,
+.withdrawal-recipient div > span {
+  color: #6d8175;
+  font-size: 0.73rem;
+}
+
+.withdrawal-balance > strong {
+  color: #15583a;
+  font-size: 1.12rem;
+  font-weight: 800;
+}
+
+.withdrawal-inline-note,
+.withdrawal-name-guidance,
+.withdrawal-security-note {
+  margin: 0;
+  color: #697b70;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.withdrawal-name-guidance {
+  padding: 10px 12px;
+  border-left: 3px solid #72b68a;
+  border-radius: 0 8px 8px 0;
+  background: #f3f8f4;
+}
+
+.withdrawal-name-guidance strong {
+  color: #315a43;
+}
+
+.withdrawal-max-button,
+.withdrawal-amount-summary button,
+.withdrawal-back-button {
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #167246;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.withdrawal-max-button:disabled {
+  color: #8d9991;
+  cursor: not-allowed;
+}
+
+.withdrawal-amount-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e6eee9;
+}
+
+.withdrawal-amount-summary > span {
+  margin-right: auto;
+  color: #6d8175;
+  font-size: 0.76rem;
+}
+
+.withdrawal-amount-summary > strong {
+  color: #15583a;
+  font-size: 0.95rem;
+}
+
+.withdrawal-amount-summary button {
+  font-size: 0.72rem;
+}
+
+.withdrawal-review-amount {
+  display: grid;
+  gap: 4px;
+  padding: 15px;
+  border-radius: 12px;
+  background: #f0f8f3;
+}
+
+.withdrawal-review-amount > strong {
+  color: #145b3b;
+  font-size: 1.45rem;
+  font-weight: 820;
+}
+
+.withdrawal-recipient {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px;
+  border: 1px solid #dce9e1;
+  border-radius: 12px;
+}
+
+.withdrawal-recipient-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  border-radius: 11px;
+  background: #eaf5ee;
+  color: #176d46;
+}
+
+.withdrawal-recipient > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.withdrawal-recipient div > strong {
+  overflow: hidden;
+  color: #244d38;
+  font-size: 0.85rem;
+  text-overflow: ellipsis;
+}
+
+.withdrawal-verified-mark {
+  display: grid;
+  width: 23px;
+  height: 23px;
+  flex: 0 0 23px;
+  margin-left: auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #e8f6ed;
+  color: #14814b;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.withdrawal-security-note {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f6f8f7;
+}
+
+.wallet-action-result {
+  display: grid;
+  gap: 5px;
+}
+
+.wallet-action-result a {
+  width: fit-content;
+  color: #126d43;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
 .account-balances {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1118,6 +1335,18 @@
   .wallet-dialog {
     gap: 10px;
     padding: 22px 18px;
+  }
+
+  .withdrawal-steps {
+    gap: 4px;
+  }
+
+  .withdrawal-steps > div {
+    gap: 5px;
+  }
+
+  .withdrawal-steps small {
+    font-size: 0.62rem;
   }
 
   .wallet-dialog h2 {

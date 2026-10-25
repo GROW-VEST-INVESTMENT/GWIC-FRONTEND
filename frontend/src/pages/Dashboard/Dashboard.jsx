@@ -124,9 +124,16 @@ function Dashboard() {
   const [walletAction, setWalletAction] = useState('');
   const [walletActionError, setWalletActionError] = useState('');
   const [walletActionMessage, setWalletActionMessage] = useState('');
+  const [withdrawalResult, setWithdrawalResult] = useState(null);
   const [isWalletActionPending, setIsWalletActionPending] = useState(false);
   const [banks, setBanks] = useState([]);
   const [isLoadingBanks, setIsLoadingBanks] = useState(false);
+  const [bankSearch, setBankSearch] = useState('');
+  const [withdrawalBankCode, setWithdrawalBankCode] = useState('');
+  const [withdrawalStep, setWithdrawalStep] = useState(1);
+  const [withdrawalAmount, setWithdrawalAmount] = useState('');
+  const [verifiedBankAccount, setVerifiedBankAccount] = useState(null);
+  const [withdrawalRequestKey, setWithdrawalRequestKey] = useState('');
   const [error, setError] = useState('');
   const [hideBalance, setHideBalance] = useState(false);
   const handledPaymentReference = useRef('');
@@ -222,9 +229,21 @@ function Dashboard() {
   async function openWalletAction(action) {
     setWalletActionError('');
     setWalletActionMessage('');
+    setWithdrawalResult(null);
     setWalletAction(action);
     if (action !== 'withdraw') return;
 
+    setWithdrawalStep(1);
+    setWithdrawalAmount('');
+    setBankSearch('');
+    setWithdrawalBankCode('');
+    setVerifiedBankAccount(null);
+    setWithdrawalRequestKey('');
+    await loadBanks();
+  }
+
+  async function loadBanks() {
+    setWalletActionError('');
     setIsLoadingBanks(true);
     try {
       const response = await fetch('/api/wallet/banks', { credentials: 'include', headers: { Accept: 'application/json' } });
@@ -244,9 +263,59 @@ function Dashboard() {
     event.preventDefault();
     setWalletActionError('');
     setWalletActionMessage('');
-    setIsWalletActionPending(true);
     const formData = new FormData(event.currentTarget);
     const isDeposit = walletAction === 'deposit';
+    if (!isDeposit && withdrawalStep === 1) {
+      const amount = Number(formData.get('amount'));
+      if (!Number.isSafeInteger(amount) || amount < 100) {
+        setWalletActionError('The minimum withdrawal is ₦100.');
+        return;
+      }
+      if (amount > Math.floor(dashboard.wallet.balance)) {
+        setWalletActionError('The withdrawal amount cannot exceed your available wallet balance.');
+        return;
+      }
+      setWithdrawalAmount(String(amount));
+      setWithdrawalStep(2);
+      return;
+    }
+
+    if (!isDeposit && withdrawalStep === 2) {
+      setIsWalletActionPending(true);
+      try {
+        const response = await fetch('/api/wallet/withdrawals/resolve', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            accountNumber: formData.get('account-number'),
+            bankCode: formData.get('bank-code'),
+          }),
+        });
+        const result = await response.json();
+        if (response.status === 401) {
+          navigate('/login', { replace: true });
+          return;
+        }
+        if (!response.ok) throw new Error(result.message || 'We could not verify this bank account.');
+        setVerifiedBankAccount({
+          accountNumber: formData.get('account-number'),
+          bankCode: formData.get('bank-code'),
+          ...result,
+        });
+        setWithdrawalRequestKey(crypto.randomUUID());
+        setWithdrawalStep(3);
+      } catch (requestError) {
+        setWalletActionError(requestError instanceof TypeError
+          ? 'We could not reach GWIC. Check your connection and try again.'
+          : requestError.message);
+      } finally {
+        setIsWalletActionPending(false);
+      }
+      return;
+    }
+
+    setIsWalletActionPending(true);
     try {
       const response = await fetch(isDeposit ? '/api/wallet/deposits' : '/api/wallet/withdrawals', {
         method: 'POST',
@@ -255,9 +324,11 @@ function Dashboard() {
         body: JSON.stringify(isDeposit
           ? { amount: Number(formData.get('amount')) }
           : {
-            amount: Number(formData.get('amount')),
-            accountNumber: formData.get('account-number'),
-            bankCode: formData.get('bank-code'),
+            amount: Number(withdrawalAmount),
+            accountNumber: verifiedBankAccount.accountNumber,
+            bankCode: verifiedBankAccount.bankCode,
+            password: formData.get('withdrawal-password'),
+            idempotencyKey: withdrawalRequestKey,
           }),
       });
       const result = await response.json();
@@ -271,7 +342,10 @@ function Dashboard() {
         return;
       }
       setWalletActionMessage(result.message);
+      setWithdrawalResult({ reference: result.reference, status: result.status });
       setWalletAction('');
+      setVerifiedBankAccount(null);
+      setWithdrawalRequestKey('');
       await loadDashboard();
     } catch (requestError) {
       setWalletActionError(requestError instanceof TypeError
@@ -499,43 +573,166 @@ function Dashboard() {
           <span className="wallet-provider">Secured by Paystack</span>
         </section>
 
-        {walletActionMessage && <p className="dashboard-message is-success" role="status">{walletActionMessage}</p>}
+        {walletActionMessage && (
+          <div className="dashboard-message is-success wallet-action-result" role="status">
+            <span>{walletActionMessage}</span>
+            {withdrawalResult?.reference && <small>Reference: {withdrawalResult.reference}</small>}
+            {withdrawalResult?.status && <small>Status: {withdrawalResult.status.replaceAll('_', ' ')}</small>}
+            {withdrawalResult?.reference && <Link to="/activity">View activity</Link>}
+          </div>
+        )}
         {walletActionError && !walletAction && <p className="dashboard-message is-error" role="alert">{walletActionError}</p>}
 
         {walletAction && (
-          <div className="wallet-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setWalletAction(''); }}>
-            <section aria-labelledby="wallet-dialog-title" aria-modal="true" className="wallet-dialog" role="dialog">
-              <button aria-label="Close" className="wallet-dialog-close" onClick={() => setWalletAction('')} type="button">×</button>
+          <div className="wallet-dialog-backdrop" onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setWalletAction('');
+              setVerifiedBankAccount(null);
+              setWithdrawalRequestKey('');
+            }
+          }}>
+            <section aria-labelledby="wallet-dialog-title" aria-modal="true" className={`wallet-dialog ${walletAction === 'withdraw' ? 'is-withdrawal' : ''}`} role="dialog">
+              <button aria-label="Close" className="wallet-dialog-close" onClick={() => { setWalletAction(''); setVerifiedBankAccount(null); setWithdrawalRequestKey(''); }} type="button">×</button>
               <h2 id="wallet-dialog-title">{walletAction === 'deposit' ? 'Add money to your wallet' : 'Withdraw to your bank'}</h2>
               <p>{walletAction === 'deposit'
                 ? 'You’ll complete payment securely on Paystack. Your wallet is credited only after payment is confirmed.'
-                : 'Withdrawals are limited to your confirmed wallet balance and bank accounts verified in your profile name.'}</p>
+                : 'Withdraw securely to a Nigerian bank account in your name.'}</p>
+              {walletAction === 'withdraw' && (
+                <>
+                  <div aria-label={`Withdrawal step ${withdrawalStep} of 3`} className="withdrawal-steps">
+                    {['Amount', 'Bank account', 'Review'].map((step, index) => (
+                      <div className={withdrawalStep >= index + 1 ? 'is-current' : ''} key={step}>
+                        <span>{index + 1}</span><small>{step}</small>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="withdrawal-balance">
+                    <span>Available to withdraw</span>
+                    <strong>{formatMoney(dashboard.wallet.balance, currency)}</strong>
+                    <small>Only confirmed wallet funds are available.</small>
+                  </div>
+                </>
+              )}
               <form className="wallet-action-form" onSubmit={handleWalletAction}>
-                <label>
-                  Amount (₦)
-                  <input autoComplete="off" inputMode="numeric" max={walletAction === 'deposit' ? '1000000' : undefined} min="100" name="amount" placeholder="₦100 minimum" required step="1" type="number" />
-                </label>
-                {walletAction === 'withdraw' && (
+                {(walletAction === 'deposit' || withdrawalStep === 1) && (
                   <>
                     <label>
-                      Bank
-                      <select name="bank-code" required disabled={isLoadingBanks || banks.length === 0}>
-                        <option value="">{isLoadingBanks ? 'Loading banks…' : 'Select your bank'}</option>
-                        {banks.map((bank) => <option key={bank.code} value={bank.code}>{bank.name}</option>)}
-                      </select>
+                      Amount (₦)
+                      <input
+                        autoComplete="off"
+                        autoFocus={walletAction === 'deposit' || withdrawalStep === 1}
+                        inputMode="numeric"
+                        max={walletAction === 'deposit' ? '1000000' : String(Math.floor(dashboard.wallet.balance))}
+                        min="100"
+                        name="amount"
+                        onChange={walletAction === 'withdraw' ? (event) => setWithdrawalAmount(event.target.value) : undefined}
+                        placeholder="₦100 minimum"
+                        required
+                        step="1"
+                        type="number"
+                        value={walletAction === 'withdraw' ? withdrawalAmount : undefined}
+                      />
                     </label>
+                    {walletAction === 'withdraw' && (
+                      <>
+                        <button
+                          className="withdrawal-max-button"
+                          disabled={dashboard.wallet.balance < 100}
+                          onClick={() => setWithdrawalAmount(String(Math.floor(dashboard.wallet.balance)))}
+                          type="button"
+                        >
+                          Withdraw full balance
+                        </button>
+                        <p className="withdrawal-inline-note">Minimum withdrawal ₦100. No fee or delivery time is shown until confirmed by the provider.</p>
+                      </>
+                    )}
+                  </>
+                )}
+                {walletAction === 'withdraw' && withdrawalStep === 2 && (
+                  <>
+                    <div className="withdrawal-amount-summary">
+                      <span>Withdrawal amount</span>
+                      <strong>{formatMoney(Number(withdrawalAmount), currency)}</strong>
+                      <button onClick={() => { setWithdrawalStep(1); setVerifiedBankAccount(null); }} type="button">Change amount</button>
+                    </div>
+                    <p className="withdrawal-name-guidance">The bank account name must match your profile name: <strong>{dashboard.user.name}</strong>.</p>
+                    <label>
+                      Search banks
+                      <input
+                        autoComplete="off"
+                        name="bank-search"
+                        onChange={(event) => {
+                          setBankSearch(event.target.value);
+                          setWithdrawalBankCode('');
+                        }}
+                        placeholder="Type a bank name"
+                        type="search"
+                        value={bankSearch}
+                      />
+                    </label>
+                    <label>
+                      Bank
+                      <select
+                        name="bank-code"
+                        onChange={(event) => {
+                          setWithdrawalBankCode(event.target.value);
+                          setBankSearch('');
+                        }}
+                        required
+                        value={withdrawalBankCode}
+                        disabled={isLoadingBanks || banks.length === 0}
+                      >
+                        <option value="">{isLoadingBanks ? 'Loading banks…' : 'Select your bank'}</option>
+                        {banks
+                          .filter((bank) => bank.name.toLowerCase().includes(bankSearch.trim().toLowerCase()))
+                          .map((bank) => <option key={bank.code} value={bank.code}>{bank.name}</option>)}
+                      </select>
+                      {!isLoadingBanks && bankSearch && !banks.some((bank) => bank.name.toLowerCase().includes(bankSearch.trim().toLowerCase())) && (
+                        <small className="wallet-name-check">No banks match “{bankSearch}”. Try another name.</small>
+                      )}
+                    </label>
+                    {!isLoadingBanks && banks.length === 0 && (
+                      <button className="withdrawal-back-button" onClick={loadBanks} type="button">Retry loading banks</button>
+                    )}
                     <label>
                       10-digit account number
                       <input autoComplete="off" inputMode="numeric" maxLength="10" minLength="10" name="account-number" pattern="[0-9]{10}" placeholder="Enter account number" required />
                     </label>
-                    <small className="wallet-name-check">Paystack verifies the account name. It must match your GWIC profile name exactly (ignoring case, spaces, and punctuation).</small>
+                    <small className="wallet-name-check">We verify the account name with Paystack. No funds move during verification.</small>
+                  </>
+                )}
+                {walletAction === 'withdraw' && withdrawalStep === 3 && verifiedBankAccount && (
+                  <>
+                    <div className="withdrawal-review-amount">
+                      <small>Amount to withdraw</small>
+                      <strong>{formatMoney(Number(withdrawalAmount), currency)}</strong>
+                      <span>This exact amount will be reserved from your wallet when you confirm.</span>
+                    </div>
+                    <div className="withdrawal-recipient">
+                      <span className="withdrawal-recipient-icon"><Icon name="withdraw" /></span>
+                      <div>
+                        <small>Verified bank account</small>
+                        <strong>{verifiedBankAccount.accountName}</strong>
+                        <span>{verifiedBankAccount.bankName} ····{verifiedBankAccount.accountLast4}</span>
+                      </div>
+                      <span aria-label="Verified" className="withdrawal-verified-mark">✓</span>
+                    </div>
+                    <p className="withdrawal-security-note">For your security, confirm with your password. Your bank details are checked again before payout.</p>
+                    <label>
+                      GWIC password
+                      <input autoComplete="current-password" name="withdrawal-password" required type="password" />
+                    </label>
+                    <button className="withdrawal-back-button" onClick={() => { setWithdrawalStep(2); setVerifiedBankAccount(null); setWithdrawalRequestKey(''); }} type="button">Back to bank details</button>
                   </>
                 )}
                 {walletActionError && <p className="dashboard-message is-error" role="alert">{walletActionError}</p>}
-                <button className="dashboard-button" disabled={isWalletActionPending || (walletAction === 'withdraw' && (isLoadingBanks || banks.length === 0))} type="submit">
+                <button className="dashboard-button" disabled={isWalletActionPending || (walletAction === 'withdraw' && withdrawalStep === 2 && (isLoadingBanks || banks.length === 0))} type="submit">
                   {isWalletActionPending
-                    ? 'Processing…'
-                    : walletAction === 'deposit' ? 'Continue to Paystack' : 'Verify and withdraw'}
+                    ? walletAction === 'withdraw' && withdrawalStep === 2 ? 'Verifying account…' : 'Processing…'
+                    : walletAction === 'deposit' ? 'Continue to Paystack'
+                      : withdrawalStep === 1 ? 'Continue'
+                        : withdrawalStep === 2 ? 'Verify bank account'
+                          : 'Confirm withdrawal'}
                 </button>
               </form>
             </section>
