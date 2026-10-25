@@ -59,11 +59,7 @@ function AccountAccess() {
     const formData = new FormData(form);
 
     try {
-      const defaultApiUrl = import.meta.env.PROD ? '' : 'http://localhost:5000';
-      const apiBaseUrl = import.meta.env.PROD
-        ? ''
-        : (import.meta.env.VITE_API_URL || defaultApiUrl).replace(/\/+$/, '');
-      const response = await fetch(`${apiBaseUrl}/api/auth/${isLogin ? 'login' : 'register'}`, {
+      const response = await fetch(`/api/auth/${isLogin ? 'login' : 'register'}`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

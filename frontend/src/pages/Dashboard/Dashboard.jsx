@@ -1,18 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Dashboard.css';
-
-function getApiBaseUrl() {
-  const defaultApiUrl = import.meta.env.PROD ? '' : 'http://localhost:5000';
-
-  return import.meta.env.PROD
-    ? ''
-    : (import.meta.env.VITE_API_URL || defaultApiUrl).replace(/\/+$/, '');
-}
 
 const navigation = [
   { label: 'Home', icon: 'home', target: 'dashboard-top' },
-  { label: 'Core Lock', icon: 'lock', target: 'savings-goals' },
+  { label: 'Core Lock', icon: 'lock', path: '/core-lock' },
   { label: 'Invest', icon: 'invest', target: 'account-balances' },
   { label: 'Portfolio', icon: 'portfolio', target: 'recent-activity' },
 ];
@@ -20,7 +12,7 @@ const navigation = [
 const quickActions = [
   { label: 'Deposit', icon: 'deposit', available: false },
   { label: 'Withdraw', icon: 'withdraw', available: false },
-  { label: 'Core Lock', icon: 'lock', available: true },
+  { label: 'Core Lock', icon: 'lock', available: true, path: '/core-lock' },
   { label: 'Invest', icon: 'invest', available: false },
 ];
 
@@ -103,7 +95,7 @@ function getTrendPath(points) {
 }
 
 async function fetchDashboardData() {
-  const response = await fetch(`${getApiBaseUrl()}/api/dashboard`, {
+  const response = await fetch('/api/dashboard', {
     credentials: 'include',
     headers: { Accept: 'application/json' },
   });
@@ -119,11 +111,14 @@ async function fetchDashboardData() {
 }
 
 function Dashboard() {
+  const location = useLocation();
   const navigate = useNavigate();
   const [dashboard, setDashboard] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isGoalFormOpen, setIsGoalFormOpen] = useState(false);
+  const [isGoalFormOpen, setIsGoalFormOpen] = useState(
+    () => new URLSearchParams(location.search).get('createGoal') === '1',
+  );
   const [showAllGoals, setShowAllGoals] = useState(false);
   const [isSavingGoal, setIsSavingGoal] = useState(false);
   const [error, setError] = useState('');
@@ -177,6 +172,13 @@ function Dashboard() {
     };
   }, [navigate]);
 
+  useEffect(() => {
+    if (!dashboard || new URLSearchParams(location.search).get('createGoal') !== '1') return;
+
+    document.getElementById('savings-goals')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    navigate('/dashboard', { replace: true });
+  }, [dashboard, location.search, navigate]);
+
   async function handleCreateGoal(event) {
     event.preventDefault();
     setError('');
@@ -184,7 +186,7 @@ function Dashboard() {
 
     const formData = new FormData(event.currentTarget);
     try {
-      const response = await fetch(`${getApiBaseUrl()}/api/dashboard/goals`, {
+      const response = await fetch('/api/dashboard/goals', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -216,7 +218,7 @@ function Dashboard() {
   async function handleLogout() {
     setIsLoggingOut(true);
     try {
-      const response = await fetch(`${getApiBaseUrl()}/api/auth/logout`, {
+      const response = await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
       });
@@ -275,7 +277,7 @@ function Dashboard() {
         </Link>
         <nav className="desktop-dashboard-nav" aria-label="Dashboard navigation">
           {navigation.map((item) => (
-            <button key={item.label} onClick={() => scrollTo(item.target)} type="button">
+            <button key={item.label} onClick={() => (item.path ? navigate(item.path) : scrollTo(item.target))} type="button">
               <Icon name={item.icon} />{item.label}
             </button>
           ))}
@@ -353,8 +355,12 @@ function Dashboard() {
               disabled={!action.available}
               key={action.label}
               onClick={() => {
-                setIsGoalFormOpen(true);
-                document.getElementById('savings-goals')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (action.path) {
+                  navigate(action.path);
+                } else {
+                  setIsGoalFormOpen(true);
+                  document.getElementById('savings-goals')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
               }}
               type="button"
             >
@@ -483,7 +489,7 @@ function Dashboard() {
           <button
             className={index === 0 ? 'is-active' : ''}
             key={item.label}
-            onClick={() => scrollTo(item.target)}
+            onClick={() => (item.path ? navigate(item.path) : scrollTo(item.target))}
             type="button"
           >
             <Icon name={item.icon} /><span>{item.label}</span>

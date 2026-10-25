@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import LandingPage from './pages/LandingPage/LandingPage';
 import AccountAccess from './pages/AccountAccess/AccountAccess';
 import Dashboard from './pages/Dashboard/Dashboard';
+import CoreLock from './pages/CoreLock/CoreLock';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/login" element={<AccountAccess />} />
         <Route path="/forgot-password" element={<AccountAccess />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/core-lock" element={<CoreLock />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
