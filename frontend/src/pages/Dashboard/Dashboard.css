@@ -1,0 +1,1237 @@
+.dashboard-app {
+  --dashboard-green: #006b3f;
+  --dashboard-deep: #003e2c;
+  --dashboard-ink: #153b2e;
+  --dashboard-muted: #71867d;
+  --dashboard-pale: #eef8f3;
+  min-height: 100vh;
+  padding-bottom: 32px;
+  background:
+    linear-gradient(180deg, #003f2c 0, #003321 342px, #f7faf8 342px, #f7faf8 100%);
+  color: var(--dashboard-ink);
+}
+
+.dashboard-header {
+  display: flex;
+  width: min(100% - 64px, 1180px);
+  min-height: 88px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  margin: 0 auto;
+  color: #fff;
+}
+
+.balance-card::after {
+  position: absolute;
+  top: -58px;
+  right: -12px;
+  width: 270px;
+  height: 210px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(50, 213, 136, 0.24), transparent 70%);
+  content: '';
+  pointer-events: none;
+}
+
+.dashboard-brand {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.dashboard-brand-mark {
+  width: 48px;
+  height: 48px;
+  color: #28bd38;
+}
+
+.dashboard-brand strong,
+.dashboard-brand small {
+  display: block;
+}
+
+.dashboard-brand strong {
+  font-size: 1.55rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.dashboard-brand small {
+  margin-top: 4px;
+  color: rgba(240, 255, 245, 0.8);
+  font-size: 0.66rem;
+  letter-spacing: 0.02em;
+}
+
+.desktop-dashboard-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.desktop-dashboard-nav button,
+.notification-button,
+.profile-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  color: rgba(241, 255, 246, 0.86);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.desktop-dashboard-nav button {
+  padding: 10px 12px;
+  border-radius: 9px;
+}
+
+.desktop-dashboard-nav button:hover,
+.desktop-dashboard-nav button:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.dashboard-icon {
+  width: 21px;
+  height: 21px;
+  flex: 0 0 auto;
+}
+
+.desktop-dashboard-nav .dashboard-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.dashboard-profile {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-button {
+  position: relative;
+  padding: 8px;
+}
+
+.notification-button span {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  display: grid;
+  min-width: 17px;
+  height: 17px;
+  place-items: center;
+  border-radius: 50%;
+  background: #ef4848;
+  color: #fff;
+  font-size: 0.65rem;
+  line-height: 1;
+}
+
+.profile-avatar {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.78);
+  border-radius: 50%;
+  background: linear-gradient(145deg, #9bdabb, #287d57);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.profile-name {
+  padding: 8px 0;
+}
+
+.dashboard-content {
+  display: grid;
+  width: min(100% - 64px, 1040px);
+  gap: 14px;
+  margin: 0 auto;
+}
+
+.dashboard-welcome {
+  display: flex;
+  min-height: 102px;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+}
+
+.dashboard-welcome h1 {
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+
+.dashboard-welcome p {
+  margin-top: 3px;
+  color: rgba(239, 255, 245, 0.85);
+  font-size: 1rem;
+}
+
+.welcome-date {
+  color: rgba(239, 255, 245, 0.72);
+  font-size: 0.86rem;
+}
+
+.balance-card {
+  position: relative;
+  display: flex;
+  min-height: 168px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  overflow: hidden;
+  padding: 26px 30px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 78% 4%, rgba(49, 211, 132, 0.64), transparent 50%),
+    linear-gradient(115deg, #08764c, #00613c 60%, #004c34);
+  box-shadow: 0 16px 38px rgba(3, 41, 27, 0.18);
+  color: #fff;
+}
+
+.balance-copy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  max-width: 68%;
+  gap: 9px;
+}
+
+.balance-label-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(242, 255, 246, 0.9);
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.balance-visibility {
+  display: inline-grid;
+  width: 30px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
+.balance-visibility:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.balance-visibility .dashboard-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.balance-copy > strong {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.1;
+}
+
+.balance-performance {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 20px;
+  font-size: 0.92rem;
+  font-weight: 780;
+}
+
+.balance-performance small {
+  color: rgba(242, 255, 246, 0.9);
+  font-size: 0.82rem;
+  font-weight: 450;
+}
+
+.balance-performance.is-positive {
+  color: #a5f434;
+}
+
+.balance-performance.is-negative {
+  color: #ff716a;
+}
+
+.balance-performance.is-neutral {
+  color: rgba(242, 255, 246, 0.82);
+}
+
+.balance-chart {
+  position: absolute;
+  right: 22px;
+  bottom: 13px;
+  width: min(31%, 250px);
+  height: 72%;
+  overflow: visible;
+  color: #8dfc35;
+  opacity: 0.96;
+  pointer-events: none;
+}
+
+.balance-chart.is-positive {
+  color: #8dfc35;
+}
+
+.balance-chart.is-negative {
+  color: #ff655e;
+}
+
+.balance-chart.is-neutral {
+  color: rgba(242, 255, 246, 0.8);
+}
+
+.balance-chart-area {
+  fill: url(#balance-chart-fill);
+}
+
+.balance-chart-line,
+.balance-chart-arrow {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.balance-chart-line {
+  stroke-width: 3;
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: balance-trend-draw 1.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.balance-chart-arrow {
+  stroke-width: 4;
+}
+
+@keyframes balance-trend-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.balance-copy > p {
+  max-width: 430px;
+  color: rgba(239, 255, 245, 0.76);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.balance-art {
+  display: grid;
+  width: 116px;
+  height: 116px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(199, 255, 199, 0.18);
+  border-radius: 50%;
+  background: rgba(25, 181, 92, 0.18);
+}
+
+.balance-art .brand-mark {
+  width: 76px;
+  height: 76px;
+  color: #70eb34;
+  opacity: 0.88;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.quick-action {
+  display: grid;
+  min-height: 112px;
+  align-content: center;
+  justify-items: center;
+  gap: 9px;
+  border: 1px solid #e2eee8;
+  border-radius: 17px;
+  background: #f0f8f4;
+  color: var(--dashboard-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.91rem;
+  font-weight: 720;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.quick-action:hover {
+  transform: translateY(-2px);
+  background: #e8f5ed;
+  box-shadow: 0 9px 20px rgba(13, 63, 40, 0.08);
+}
+
+.quick-action-icon {
+  display: grid;
+  width: 43px;
+  height: 43px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--dashboard-deep);
+  color: #fff;
+}
+
+.quick-action-icon .dashboard-icon {
+  width: 23px;
+  height: 23px;
+}
+
+.account-balances {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+  scroll-margin-top: 20px;
+}
+
+.account-balance-card {
+  display: flex;
+  min-width: 0;
+  min-height: 112px;
+  align-items: center;
+  gap: 13px;
+  padding: 17px 18px;
+  border: 1px solid #e3eee8;
+  border-radius: 18px;
+  background: #f0f8f4;
+}
+
+.account-category-icon,
+.goal-icon,
+.activity-icon {
+  display: grid;
+  width: 49px;
+  height: 49px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #08764d, #00452f);
+  color: #fff;
+}
+
+.account-category-icon.is-investment {
+  background: linear-gradient(145deg, #157a57, #06482f);
+}
+
+.account-balance-copy {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 3px;
+}
+
+.account-balance-copy > span {
+  font-size: 0.87rem;
+  font-weight: 700;
+}
+
+.account-balance-copy > strong {
+  overflow: hidden;
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-weight: 780;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-balance-copy > small {
+  color: #6d8579;
+  font-size: 0.72rem;
+}
+
+.account-balance-card > .dashboard-icon {
+  width: 18px;
+  height: 18px;
+  color: #438d6b;
+}
+
+.dashboard-section {
+  display: grid;
+  gap: 12px;
+  padding-top: 4px;
+  scroll-margin-top: 20px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+}
+
+.section-heading h2 {
+  color: #104331;
+  font-size: 1.2rem;
+  font-weight: 780;
+  letter-spacing: -0.025em;
+}
+
+.text-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  color: #16784f;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.text-action .dashboard-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.goal-list,
+.activity-list {
+  display: grid;
+  gap: 10px;
+}
+
+.goal-card,
+.activity-card,
+.empty-card {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 18px;
+  border: 1px solid #edf3ef;
+  border-radius: 17px;
+  background: #fff;
+}
+
+.goal-card {
+  min-height: 86px;
+}
+
+.goal-icon {
+  width: 52px;
+  height: 52px;
+}
+
+.goal-icon .dashboard-icon {
+  width: 26px;
+  height: 26px;
+}
+
+.goal-information {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 4px;
+}
+
+.goal-information > strong,
+.activity-description > strong {
+  overflow: hidden;
+  color: #183b2e;
+  font-size: 0.9rem;
+  font-weight: 720;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal-information > span {
+  color: #355f4d;
+  font-size: 0.78rem;
+  font-weight: 680;
+}
+
+.goal-target {
+  color: #7a8d84;
+  font-weight: 450;
+}
+
+.goal-progress {
+  width: min(100%, 460px);
+  height: 7px;
+  overflow: hidden;
+  margin-top: 3px;
+  border-radius: 99px;
+  background: #e5efea;
+}
+
+.goal-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0b8651, #27b873);
+}
+
+.goal-percentage {
+  min-width: 35px;
+  color: #315e49;
+  font-size: 0.76rem;
+  font-weight: 760;
+  text-align: right;
+}
+
+.goal-card > .dashboard-icon {
+  width: 19px;
+  height: 19px;
+  color: #428d6b;
+}
+
+.goal-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: end;
+  gap: 12px;
+  padding: 17px;
+  border: 1px solid #e3eee8;
+  border-radius: 15px;
+  background: #fff;
+}
+
+.goal-form label {
+  display: grid;
+  gap: 6px;
+  color: #355c49;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.goal-form input {
+  width: 100%;
+  min-height: 43px;
+  padding: 9px 11px;
+  border: 1px solid #ceded4;
+  border-radius: 8px;
+  background: #fff;
+  color: #153b2e;
+  font: inherit;
+  font-size: 0.87rem;
+}
+
+.goal-form input:focus {
+  border-color: #16824d;
+  outline: 3px solid rgba(22, 130, 77, 0.12);
+}
+
+.dashboard-button {
+  min-height: 42px;
+  padding: 0 17px;
+  border: 0;
+  border-radius: 8px;
+  background: #087447;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 720;
+}
+
+.dashboard-button:hover {
+  background: #005b38;
+}
+
+.dashboard-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.empty-card {
+  min-height: 105px;
+}
+
+.empty-card > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.empty-card strong {
+  color: #183b2e;
+  font-size: 0.9rem;
+}
+
+.empty-card p {
+  margin-top: 4px;
+  color: #71867d;
+  font-size: 0.79rem;
+  line-height: 1.45;
+}
+
+.activity-card {
+  min-height: 78px;
+}
+
+.activity-icon {
+  width: 43px;
+  height: 43px;
+}
+
+.activity-icon.is-investment {
+  background: #582e95;
+}
+
+.activity-description {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 4px;
+}
+
+.activity-description small,
+.activity-amount small {
+  color: #73877e;
+  font-size: 0.74rem;
+}
+
+.activity-amount {
+  display: grid;
+  gap: 4px;
+  text-align: right;
+}
+
+.activity-amount strong {
+  color: #18804a;
+  font-size: 0.88rem;
+}
+
+.section-meta {
+  color: #71867d;
+  font-size: 0.78rem;
+}
+
+.dashboard-message {
+  padding: 10px 13px;
+  border-left: 3px solid #13804d;
+  border-radius: 4px;
+  background: #eaf6ee;
+  color: #1d5a3b;
+  font-size: 0.84rem;
+}
+
+.dashboard-message.is-error {
+  border-left-color: #ba4848;
+  background: #fff0ee;
+  color: #833a37;
+}
+
+.mobile-bottom-nav {
+  display: none;
+}
+
+.dashboard-loading-shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  background: #f3f8f4;
+}
+
+.dashboard-loading-card {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 30px;
+  color: #244736;
+  text-align: center;
+}
+
+.dashboard-loading-logo {
+  width: 54px;
+  height: 54px;
+}
+
+.dashboard-error-card {
+  max-width: 440px;
+}
+
+@media (min-width: 1400px) {
+  .dashboard-content {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 850px) {
+  .dashboard-header,
+  .dashboard-content {
+    width: min(100% - 40px, 720px);
+  }
+
+  .desktop-dashboard-nav {
+    gap: 0;
+  }
+
+  .desktop-dashboard-nav button {
+    padding-inline: 8px;
+  }
+
+  .desktop-dashboard-nav button:not(:first-child) {
+    font-size: 0;
+  }
+
+  .desktop-dashboard-nav button:not(:first-child) .dashboard-icon {
+    width: 21px;
+    height: 21px;
+  }
+
+  .profile-name {
+    font-size: 0;
+  }
+
+  .profile-name::after {
+    content: '⌄';
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-app {
+    padding: 0 0 90px;
+    background:
+      linear-gradient(180deg, #003f2c 0, #003321 clamp(190px, 62vw, 240px), #f8fbf9 clamp(190px, 62vw, 240px), #f8fbf9 100%);
+  }
+
+  .dashboard-header {
+    width: 100%;
+    min-height: 70px;
+    padding: 0 12px;
+    gap: 12px;
+  }
+
+  .dashboard-brand {
+    gap: 8px;
+  }
+
+  .dashboard-brand-mark {
+    width: 38px;
+    height: 38px;
+  }
+
+  .dashboard-brand strong {
+    font-size: 1.2rem;
+  }
+
+  .dashboard-brand small {
+    font-size: 0.55rem;
+  }
+
+  .desktop-dashboard-nav {
+    display: none;
+  }
+
+  .dashboard-profile {
+    gap: 7px;
+  }
+
+  .notification-button {
+    padding: 7px;
+  }
+
+  .notification-button .dashboard-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .profile-avatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  .profile-name {
+    display: none;
+  }
+
+  .dashboard-content {
+    width: 100%;
+    gap: 8px;
+    padding: 0 11px;
+  }
+
+  .dashboard-welcome {
+    min-height: 54px;
+    align-items: flex-start;
+    padding: 0 3px 2px;
+  }
+
+  .dashboard-welcome h1 {
+    font-size: 1rem;
+  }
+
+  .dashboard-welcome h1 span {
+    font-size: 1.12em;
+  }
+
+  .dashboard-welcome p {
+    margin-top: 2px;
+    font-size: 0.78rem;
+  }
+
+  .welcome-date {
+    display: none;
+  }
+
+  .balance-card {
+    min-height: clamp(75px, 25vw, 98px);
+    gap: 8px;
+    padding: 9px 13px;
+    border-radius: 14px;
+  }
+
+  .balance-copy {
+    min-width: 0;
+    max-width: 66%;
+    gap: 3px;
+  }
+
+  .balance-label-row {
+    gap: 5px;
+    font-size: 0.75rem;
+  }
+
+  .balance-copy > strong {
+    font-size: clamp(1.4rem, 6.2vw, 1.8rem);
+    overflow-wrap: anywhere;
+  }
+
+  .balance-performance {
+    gap: 8px;
+    min-height: 14px;
+    font-size: 0.75rem;
+  }
+
+  .balance-performance small {
+    font-size: 0.68rem;
+  }
+
+  .balance-chart {
+    right: 10px;
+    bottom: 8px;
+    width: 38%;
+    height: 75%;
+  }
+
+  .balance-chart-line {
+    stroke-width: 2.6;
+  }
+
+  .balance-copy > p {
+    max-width: 250px;
+    font-size: 0.61rem;
+  }
+
+  .balance-card::after {
+    top: -45px;
+    right: -35px;
+    width: 160px;
+    height: 150px;
+  }
+
+  .quick-actions {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .quick-action {
+    min-height: 65px;
+    gap: 5px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+  }
+
+  .quick-action-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .quick-action-icon .dashboard-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .quick-action:disabled {
+    cursor: not-allowed;
+  }
+
+  .quick-action:disabled:hover {
+    transform: none;
+    background: #f0f8f4;
+    box-shadow: none;
+  }
+
+  .account-balances {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .account-balance-card {
+    min-height: 71px;
+    gap: 7px;
+    padding: 9px;
+    border-radius: 12px;
+  }
+
+  .account-category-icon {
+    width: 33px;
+    height: 33px;
+  }
+
+  .account-category-icon .dashboard-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .account-balance-copy > span {
+    font-size: 0.72rem;
+  }
+
+  .account-balance-copy > strong {
+    font-size: clamp(0.7rem, 3.3vw, 0.88rem);
+  }
+
+  .account-balance-copy > small {
+    display: none;
+  }
+
+  .account-balance-card > .dashboard-icon {
+    display: none;
+  }
+
+  .dashboard-section {
+    gap: 7px;
+    padding-top: 4px;
+  }
+
+  .section-heading {
+    padding: 0 3px;
+  }
+
+  .section-heading h2 {
+    font-size: 0.98rem;
+  }
+
+  .text-action {
+    font-size: 0.78rem;
+  }
+
+  .goal-list,
+  .activity-list {
+    gap: 6px;
+  }
+
+  .goal-card,
+  .activity-card,
+  .empty-card {
+    gap: 9px;
+    padding: 8px 10px;
+    border-radius: 12px;
+  }
+
+  .goal-card {
+    min-height: 51px;
+  }
+
+  .goal-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .goal-icon .dashboard-icon {
+    width: 23px;
+    height: 23px;
+  }
+
+  .goal-information {
+    gap: 4px;
+  }
+
+  .goal-information > strong,
+  .activity-description > strong {
+    font-size: 0.76rem;
+  }
+
+  .goal-information > span {
+    font-size: 0.66rem;
+  }
+
+  .goal-progress {
+    height: 5px;
+  }
+
+  .goal-percentage {
+    min-width: 23px;
+    font-size: 0.63rem;
+  }
+
+  .goal-card > .dashboard-icon {
+    width: 15px;
+    height: 15px;
+  }
+
+  .goal-form {
+    grid-template-columns: 1fr;
+    padding: 13px;
+  }
+
+  .goal-form .dashboard-button {
+    width: 100%;
+  }
+
+  .empty-card {
+    align-items: flex-start;
+  }
+
+  .empty-card .goal-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .empty-card strong {
+    font-size: 0.82rem;
+  }
+
+  .empty-card p {
+    font-size: 0.73rem;
+  }
+
+  .empty-card > .dashboard-button {
+    flex: 0 0 auto;
+    min-height: 36px;
+    padding: 0 10px;
+    font-size: 0.72rem;
+  }
+
+  .activity-card {
+    min-height: 54px;
+  }
+
+  .activity-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .activity-icon .dashboard-icon {
+    width: 19px;
+    height: 19px;
+  }
+
+  .activity-description small,
+  .activity-amount small {
+    font-size: 0.65rem;
+  }
+
+  .activity-amount strong {
+    font-size: 0.75rem;
+  }
+
+  .mobile-bottom-nav {
+    position: fixed;
+    z-index: 5;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: grid;
+    min-height: 76px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: 7px 5px max(8px, env(safe-area-inset-bottom));
+    border-top: 1px solid #e5ece8;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 -5px 18px rgba(21, 52, 37, 0.06);
+    backdrop-filter: blur(14px);
+  }
+
+  .mobile-bottom-nav button {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 2px;
+    border: 0;
+    background: transparent;
+    color: #647b81;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.7rem;
+    font-weight: 650;
+  }
+
+  .mobile-bottom-nav button .dashboard-icon {
+    width: 27px;
+    height: 27px;
+    stroke-width: 2.2;
+  }
+
+  .mobile-bottom-nav button.is-active {
+    color: #07843f;
+    font-weight: 750;
+  }
+
+  .mobile-bottom-nav button:disabled {
+    cursor: default;
+    opacity: 1;
+  }
+}
+
+@media (max-width: 380px) {
+  .dashboard-content {
+    padding-inline: 11px;
+  }
+
+  .dashboard-header {
+    padding-inline: 13px;
+  }
+
+  .quick-actions {
+    gap: 6px;
+  }
+
+  .quick-action {
+    font-size: 0.68rem;
+  }
+
+  .account-balance-card {
+    gap: 6px;
+    padding-inline: 8px;
+  }
+
+  .account-category-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .goal-card,
+  .activity-card,
+  .empty-card {
+    padding-inline: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .balance-chart-line {
+    animation-duration: 0.01ms;
+    animation-delay: 0ms;
+  }
+}

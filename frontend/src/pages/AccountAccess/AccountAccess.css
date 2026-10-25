@@ -181,6 +181,66 @@
   box-shadow: 0 0 0 3px rgba(22, 130, 77, 0.12);
 }
 
+.password-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.password-label-row .field-label {
+  margin-bottom: 7px;
+}
+
+.forgot-password-link,
+.status-action {
+  color: #087544;
+  font-size: 0.8rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.forgot-password-link:hover,
+.status-action:hover {
+  text-decoration: underline;
+}
+
+.password-input-wrap {
+  position: relative;
+}
+
+.password-input-wrap .access-input {
+  padding-right: 68px;
+}
+
+.password-visibility {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  padding: 5px 3px;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: #087544;
+  cursor: pointer;
+  font-size: 0.81rem;
+  font-weight: 750;
+}
+
+.password-visibility:focus-visible,
+.forgot-password-link:focus-visible,
+.status-action:focus-visible {
+  outline: 2px solid #16824d;
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+.password-requirement {
+  margin-top: 6px;
+  color: #63766b;
+  font-size: 0.76rem;
+}
+
 select.access-input:invalid {
   color: #98a59d;
 }
@@ -277,6 +337,27 @@ select.access-input:invalid {
   transform: none;
 }
 
+.access-spinner {
+  width: 17px;
+  height: 17px;
+  border: 2px solid rgba(255, 255, 255, 0.42);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: access-spin 700ms linear infinite;
+}
+
+@keyframes access-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .access-spinner {
+    animation-duration: 1400ms;
+  }
+}
+
 .access-submit span {
   font-size: 1.3rem;
   font-weight: 400;
@@ -299,6 +380,49 @@ select.access-input:invalid {
   border-left: 3px solid #16824d;
   background: #eff8f1;
   color: #175b37;
+}
+
+.status-action {
+  white-space: nowrap;
+}
+
+.recovery-notice {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 28px;
+  padding: 19px;
+  border: 1px solid #d7e8db;
+  border-radius: 8px;
+  background: #f4faf5;
+}
+
+.recovery-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: #deefdf;
+  color: #075b38;
+  font-weight: 800;
+}
+
+.recovery-notice strong {
+  color: #17392a;
+  font-size: 0.92rem;
+}
+
+.recovery-notice p {
+  margin-top: 6px;
+  color: #586d63;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.recovery-login {
+  grid-column: 1 / -1;
+  text-decoration: none;
 }
 
 .access-switch {

@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import BrandMark from '../../components/BrandMark';
 import './AccountAccess.css';
+
+const PASSWORD_MIN_LENGTH = 8;
 
 const productOptions = [
   {
@@ -32,6 +34,7 @@ const savingGoals = [
 
 function AccountAccess() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isLogin = location.pathname === '/login';
   const requestedProduct = searchParams.get('product');
@@ -40,6 +43,12 @@ function AccountAccess() {
   );
   const [notice, setNotice] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState(location.state?.registeredEmail || '');
+  const isForgotPassword = location.pathname === '/forgot-password';
+  const registrationNotice = isLogin && location.state?.accountCreated
+    ? 'Your account is ready. Log in with your new account to continue.'
+    : null;
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -63,19 +72,25 @@ function AccountAccess() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || 'We could not create your account. Please try again.');
+        setNotice({
+          type: 'error',
+          message: result.message || `We could not ${isLogin ? 'log you in' : 'create your account'}. Please try again.`,
+          duplicateEmail: !isLogin && response.status === 409,
+        });
+        return;
       }
 
-      form.reset();
       if (!isLogin) {
-        setSelectedProduct('undecided');
+        navigate('/login', {
+          state: {
+            accountCreated: true,
+            registeredEmail: formData.get('email'),
+          },
+        });
+        return;
       }
-      setNotice({
-        type: 'success',
-        message: isLogin
-          ? `Welcome back, ${result.user.name}.`
-          : 'Your account has been created successfully. You can now log in.',
-      });
+
+      navigate('/dashboard', { replace: true });
     } catch (error) {
       setNotice({
         type: 'error',
@@ -100,15 +115,40 @@ function AccountAccess() {
 
       <main className="access-layout">
         <section className="access-form-column">
-          <div className="access-kicker">{isLogin ? 'WELCOME BACK' : 'YOUR FINANCIAL JOURNEY'}</div>
-          <h1>{isLogin ? 'Log in to GWIC' : 'Start with a stronger core.'}</h1>
+          <div className="access-kicker">
+            {isForgotPassword ? 'ACCOUNT ACCESS' : isLogin ? 'WELCOME BACK' : 'YOUR FINANCIAL JOURNEY'}
+          </div>
+          <h1>
+            {isForgotPassword
+              ? 'Password recovery'
+              : isLogin
+                ? 'Log in to GWIC'
+                : 'Start with a stronger core.'}
+          </h1>
           <p className="access-intro">
-            {isLogin
-              ? 'Access your GWIC account and continue where you left off.'
-              : 'Create your profile, tell us what you’re working toward, and explore the products that may fit your plans.'}
+            {isForgotPassword
+              ? 'We want to help you get back into your account safely.'
+              : isLogin
+                ? 'Access your GWIC account and continue where you left off.'
+                : 'Create your profile, tell us what you’re working toward, and explore the products that may fit your plans.'}
           </p>
 
-          {!isLogin && (
+          {isForgotPassword ? (
+            <div className="recovery-notice" role="status">
+              <span className="recovery-icon" aria-hidden="true">i</span>
+              <div>
+                <strong>Self-serve password reset isn’t available yet.</strong>
+                <p>GWIC can’t send a reset link right now. No changes have been made to your account.</p>
+              </div>
+              <Link
+                className="access-submit recovery-login"
+                to="/login"
+                state={email ? { registeredEmail: email } : undefined}
+              >
+                Back to login
+              </Link>
+            </div>
+          ) : !isLogin && (
             <ol className="access-steps" aria-label="Signup steps">
               <li className="is-current"><span>01</span>Profile</li>
               <li><span>02</span>Choose</li>
@@ -116,7 +156,7 @@ function AccountAccess() {
             </ol>
           )}
 
-          <form className="access-form" onSubmit={handleSubmit}>
+          {!isForgotPassword && <form className="access-form" onSubmit={handleSubmit}>
             {!isLogin && (
               <>
                 <label className="field-label" htmlFor="full-name">Full name</label>
@@ -125,7 +165,18 @@ function AccountAccess() {
             )}
 
             <label className="field-label" htmlFor="email">Email address</label>
-            <input className="access-input" autoComplete="email" id="email" name="email" placeholder="you@example.com" required type="email" />
+            <input
+              className="access-input"
+              autoComplete="email"
+              defaultValue={isLogin ? email : undefined}
+              id="email"
+              key={`${location.key}-email`}
+              name="email"
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
+              required
+              type="email"
+            />
 
             {!isLogin && (
               <>
@@ -161,32 +212,81 @@ function AccountAccess() {
               </>
             )}
 
-            <label className="field-label" htmlFor="password">Password</label>
-            <input
-              className="access-input"
-              autoComplete={isLogin ? 'current-password' : 'new-password'}
-              id="password"
-              minLength={8}
-              name="password"
-              placeholder="At least 8 characters"
-              required
-              type="password"
-            />
-
-            <button className="access-submit" disabled={isSubmitting} type="submit">
-              {isSubmitting ? (isLogin ? 'Logging in…' : 'Creating account…') : isLogin ? 'Log In' : 'Create account'} <span aria-hidden="true">→</span>
-            </button>
-
-            {notice && (
-              <p className={`form-status is-${notice.type}`} role={notice.type === 'error' ? 'alert' : 'status'}>
-                {notice.message}
+            <div className="password-label-row">
+              <label className="field-label" htmlFor="password">Password</label>
+              {isLogin && (
+                <Link
+                  className="forgot-password-link"
+                  to="/forgot-password"
+                  state={email ? { registeredEmail: email } : undefined}
+                >
+                  Forgot password?
+                </Link>
+              )}
+            </div>
+            <div className="password-input-wrap">
+              <input
+                className="access-input"
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
+                autoFocus={isLogin && Boolean(location.state?.accountCreated)}
+                id="password"
+                minLength={PASSWORD_MIN_LENGTH}
+                name="password"
+                placeholder={isLogin ? 'Enter your password' : `At least ${PASSWORD_MIN_LENGTH} characters`}
+                required
+                type={showPassword ? 'text' : 'password'}
+                aria-describedby={!isLogin ? 'password-requirement' : undefined}
+              />
+              <button
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+                className="password-visibility"
+                onClick={() => setShowPassword((visible) => !visible)}
+                type="button"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            {!isLogin && (
+              <p className="password-requirement" id="password-requirement">
+                Use at least {PASSWORD_MIN_LENGTH} characters.
               </p>
             )}
-          </form>
+
+            <button aria-busy={isSubmitting} className="access-submit" disabled={isSubmitting} type="submit">
+              {isSubmitting && <span aria-hidden="true" className="access-spinner" />}
+              <span>{isSubmitting ? (isLogin ? 'Logging in…' : 'Creating account…') : isLogin ? 'Log In' : 'Create account'}</span>
+              {!isSubmitting && <span aria-hidden="true">→</span>}
+            </button>
+
+            {(registrationNotice || notice) && (
+              <p className={`form-status is-${notice?.type || 'success'}`} role={notice?.type === 'error' ? 'alert' : 'status'}>
+                {notice?.message || registrationNotice}
+                {notice?.duplicateEmail && (
+                  <>
+                    {' '}
+                    <Link
+                      className="status-action"
+                      to="/login"
+                      state={{ registeredEmail: email.trim() }}
+                    >
+                      Go to login
+                    </Link>
+                  </>
+                )}
+              </p>
+            )}
+          </form>}
 
           <p className="access-switch">
-            {isLogin ? 'New to GWIC?' : 'Already have an account?'}{' '}
-            <Link to={isLogin ? '/get-started' : '/login'}>{isLogin ? 'Create an account' : 'Log in'}</Link>
+            {isForgotPassword
+              ? 'Remember your password?'
+              : isLogin
+                ? 'New to GWIC?'
+                : 'Already have an account?'}{' '}
+            <Link to={isForgotPassword || !isLogin ? '/login' : '/get-started'}>
+              {isForgotPassword ? 'Log in' : isLogin ? 'Create an account' : 'Log in'}
+            </Link>
           </p>
         </section>
 
