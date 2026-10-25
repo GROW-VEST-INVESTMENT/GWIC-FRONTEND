@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
@@ -10,8 +10,8 @@ const navigation = [
 ];
 
 const quickActions = [
-  { label: 'Deposit', icon: 'deposit', available: false },
-  { label: 'Withdraw', icon: 'withdraw', available: false },
+  { label: 'Deposit', icon: 'deposit', available: true, walletAction: 'deposit' },
+  { label: 'Withdraw', icon: 'withdraw', available: true, walletAction: 'withdraw' },
   { label: 'Core Lock', icon: 'lock', available: true, path: '/core-lock' },
   { label: 'Invest', icon: 'invest', available: false },
 ];
@@ -95,19 +95,19 @@ function getTrendPath(points) {
 }
 
 async function fetchDashboardData() {
-  const response = await fetch('/api/dashboard', {
-    credentials: 'include',
-    headers: { Accept: 'application/json' },
-  });
-
-  if (response.status === 401) {
+  const [dashboardResponse, walletResponse] = await Promise.all([
+    fetch('/api/dashboard', { credentials: 'include', headers: { Accept: 'application/json' } }),
+    fetch('/api/wallet', { credentials: 'include', headers: { Accept: 'application/json' } }),
+  ]);
+  if (dashboardResponse.status === 401 || walletResponse.status === 401) {
     return { unauthorized: true };
   }
-  if (!response.ok) {
+  if (!dashboardResponse.ok || !walletResponse.ok) {
     throw new Error('We could not load your dashboard. Please try again.');
   }
 
-  return { dashboard: await response.json(), unauthorized: false };
+  const [dashboard, wallet] = await Promise.all([dashboardResponse.json(), walletResponse.json()]);
+  return { dashboard: { ...dashboard, wallet }, unauthorized: false };
 }
 
 function Dashboard() {
@@ -121,8 +121,15 @@ function Dashboard() {
   );
   const [showAllGoals, setShowAllGoals] = useState(false);
   const [isSavingGoal, setIsSavingGoal] = useState(false);
+  const [walletAction, setWalletAction] = useState('');
+  const [walletActionError, setWalletActionError] = useState('');
+  const [walletActionMessage, setWalletActionMessage] = useState('');
+  const [isWalletActionPending, setIsWalletActionPending] = useState(false);
+  const [banks, setBanks] = useState([]);
+  const [isLoadingBanks, setIsLoadingBanks] = useState(false);
   const [error, setError] = useState('');
   const [hideBalance, setHideBalance] = useState(false);
+  const handledPaymentReference = useRef('');
 
   const loadDashboard = useCallback(async () => {
     try {
@@ -178,6 +185,102 @@ function Dashboard() {
     document.getElementById('savings-goals')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     navigate('/dashboard', { replace: true });
   }, [dashboard, location.search, navigate]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const reference = params.get('reference') || params.get('trxref');
+    if (!dashboard || params.get('payment') !== 'paystack' || !reference || handledPaymentReference.current === reference) return;
+
+    handledPaymentReference.current = reference;
+    let isActive = true;
+    async function verifyReturnedPayment() {
+      setWalletActionMessage('Confirming your deposit with Paystack…');
+      try {
+        const response = await fetch('/api/wallet/deposits/verify', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ reference }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || 'We could not confirm this deposit yet.');
+        if (!isActive) return;
+        setWalletActionMessage('Deposit confirmed and added to your wallet.');
+        await loadDashboard();
+      } catch (requestError) {
+        if (isActive) setWalletActionError(requestError.message);
+      } finally {
+        if (isActive) navigate('/dashboard', { replace: true });
+      }
+    }
+    verifyReturnedPayment();
+    return () => {
+      isActive = false;
+    };
+  }, [dashboard, loadDashboard, location.search, navigate]);
+
+  async function openWalletAction(action) {
+    setWalletActionError('');
+    setWalletActionMessage('');
+    setWalletAction(action);
+    if (action !== 'withdraw') return;
+
+    setIsLoadingBanks(true);
+    try {
+      const response = await fetch('/api/wallet/banks', { credentials: 'include', headers: { Accept: 'application/json' } });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'We could not load the bank list.');
+      setBanks(result.banks);
+    } catch (requestError) {
+      setWalletActionError(requestError instanceof TypeError
+        ? 'We could not reach GWIC. Check your connection and try again.'
+        : requestError.message);
+    } finally {
+      setIsLoadingBanks(false);
+    }
+  }
+
+  async function handleWalletAction(event) {
+    event.preventDefault();
+    setWalletActionError('');
+    setWalletActionMessage('');
+    setIsWalletActionPending(true);
+    const formData = new FormData(event.currentTarget);
+    const isDeposit = walletAction === 'deposit';
+    try {
+      const response = await fetch(isDeposit ? '/api/wallet/deposits' : '/api/wallet/withdrawals', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(isDeposit
+          ? { amount: Number(formData.get('amount')) }
+          : {
+            amount: Number(formData.get('amount')),
+            accountNumber: formData.get('account-number'),
+            bankCode: formData.get('bank-code'),
+          }),
+      });
+      const result = await response.json();
+      if (response.status === 401) {
+        navigate('/login', { replace: true });
+        return;
+      }
+      if (!response.ok) throw new Error(result.message || 'We could not process this request.');
+      if (isDeposit) {
+        window.location.assign(result.authorizationUrl);
+        return;
+      }
+      setWalletActionMessage(result.message);
+      setWalletAction('');
+      await loadDashboard();
+    } catch (requestError) {
+      setWalletActionError(requestError instanceof TypeError
+        ? 'We could not reach GWIC. Check your connection and try again.'
+        : requestError.message);
+    } finally {
+      setIsWalletActionPending(false);
+    }
+  }
 
   async function handleCreateGoal(event) {
     event.preventDefault();
@@ -357,6 +460,8 @@ function Dashboard() {
               onClick={() => {
                 if (action.path) {
                   navigate(action.path);
+                } else if (action.walletAction) {
+                  openWalletAction(action.walletAction);
                 } else {
                   setIsGoalFormOpen(true);
                   document.getElementById('savings-goals')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -369,6 +474,70 @@ function Dashboard() {
             </button>
           ))}
         </section>
+
+        <section className="wallet-overview" aria-label="Paystack wallet">
+          <div>
+            <span>Available wallet balance</span>
+            <strong>{displayAmount(dashboard.wallet.balance)}</strong>
+            <small>Only confirmed payments are included.</small>
+          </div>
+          <span className="wallet-provider">Secured by Paystack</span>
+        </section>
+        {dashboard.wallet.transactions.length > 0 && (
+          <section aria-label="Recent wallet transactions" className="wallet-transactions">
+            <strong>Recent wallet activity</strong>
+            {dashboard.wallet.transactions.slice(0, 4).map((transaction) => (
+              <div className="wallet-transaction" key={transaction.reference}>
+                <span>{transaction.type === 'deposit' ? 'Deposit' : `Withdrawal${transaction.bankName ? ` · ${transaction.bankName}` : ''}`}</span>
+                <span>{displayAmount(transaction.amount)}</span>
+                <small className={`wallet-transaction-status is-${transaction.status}`}>{transaction.status.replaceAll('_', ' ')}</small>
+              </div>
+            ))}
+          </section>
+        )}
+
+        {walletActionMessage && <p className="dashboard-message is-success" role="status">{walletActionMessage}</p>}
+        {walletActionError && !walletAction && <p className="dashboard-message is-error" role="alert">{walletActionError}</p>}
+
+        {walletAction && (
+          <div className="wallet-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setWalletAction(''); }}>
+            <section aria-labelledby="wallet-dialog-title" aria-modal="true" className="wallet-dialog" role="dialog">
+              <button aria-label="Close" className="wallet-dialog-close" onClick={() => setWalletAction('')} type="button">×</button>
+              <h2 id="wallet-dialog-title">{walletAction === 'deposit' ? 'Add money to your wallet' : 'Withdraw to your bank'}</h2>
+              <p>{walletAction === 'deposit'
+                ? 'You’ll complete payment securely on Paystack. Your wallet is credited only after payment is confirmed.'
+                : 'Withdrawals are limited to your confirmed wallet balance and bank accounts verified in your profile name.'}</p>
+              <form className="wallet-action-form" onSubmit={handleWalletAction}>
+                <label>
+                  Amount (₦)
+                  <input autoComplete="off" inputMode="numeric" max={walletAction === 'deposit' ? '1000000' : undefined} min="100" name="amount" placeholder="₦100 minimum" required step="1" type="number" />
+                </label>
+                {walletAction === 'withdraw' && (
+                  <>
+                    <label>
+                      Bank
+                      <select name="bank-code" required disabled={isLoadingBanks || banks.length === 0}>
+                        <option value="">{isLoadingBanks ? 'Loading banks…' : 'Select your bank'}</option>
+                        {banks.map((bank) => <option key={bank.code} value={bank.code}>{bank.name}</option>)}
+                      </select>
+                    </label>
+                    <label>
+                      10-digit account number
+                      <input autoComplete="off" inputMode="numeric" maxLength="10" minLength="10" name="account-number" pattern="[0-9]{10}" placeholder="Enter account number" required />
+                    </label>
+                    <small className="wallet-name-check">Paystack verifies the account name. It must match your GWIC profile name exactly (ignoring case, spaces, and punctuation).</small>
+                  </>
+                )}
+                {walletActionError && <p className="dashboard-message is-error" role="alert">{walletActionError}</p>}
+                <button className="dashboard-button" disabled={isWalletActionPending || (walletAction === 'withdraw' && (isLoadingBanks || banks.length === 0))} type="submit">
+                  {isWalletActionPending
+                    ? 'Processing…'
+                    : walletAction === 'deposit' ? 'Continue to Paystack' : 'Verify and withdraw'}
+                </button>
+              </form>
+            </section>
+          </div>
+        )}
 
         <section className="account-balances" id="account-balances" aria-label="Savings and investment balances">
           <article className="account-balance-card">
