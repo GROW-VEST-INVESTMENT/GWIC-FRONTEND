@@ -366,6 +366,21 @@ function Dashboard() {
   const hasMonthlyChange = Number.isFinite(monthlyChange);
   const trendPath = hasMonthlyChange ? getTrendPath(dashboard.performance.chartPoints) : null;
   const performanceDirection = monthlyChange > 0 ? 'positive' : monthlyChange < 0 ? 'negative' : 'neutral';
+  const recentActivity = [
+    ...dashboard.recentActivity,
+    ...dashboard.wallet.transactions.map((transaction) => ({
+      id: transaction.reference,
+      type: 'wallet',
+      description: transaction.type === 'deposit' ? 'Wallet deposit' : 'Wallet withdrawal',
+      source: transaction.bankName
+        ? `${transaction.bankName}${transaction.accountLast4 ? ` ····${transaction.accountLast4}` : ''}`
+        : 'Paystack wallet',
+      amount: transaction.amount,
+      createdAt: transaction.createdAt,
+      status: transaction.status,
+      transactionType: transaction.type,
+    })),
+  ].sort((first, second) => new Date(second.createdAt) - new Date(first.createdAt));
 
   function scrollTo(target) {
     document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -483,18 +498,6 @@ function Dashboard() {
           </div>
           <span className="wallet-provider">Secured by Paystack</span>
         </section>
-        {dashboard.wallet.transactions.length > 0 && (
-          <section aria-label="Recent wallet transactions" className="wallet-transactions">
-            <strong>Recent wallet activity</strong>
-            {dashboard.wallet.transactions.slice(0, 4).map((transaction) => (
-              <div className="wallet-transaction" key={transaction.reference}>
-                <span>{transaction.type === 'deposit' ? 'Deposit' : `Withdrawal${transaction.bankName ? ` · ${transaction.bankName}` : ''}`}</span>
-                <span>{displayAmount(transaction.amount)}</span>
-                <small className={`wallet-transaction-status is-${transaction.status}`}>{transaction.status.replaceAll('_', ' ')}</small>
-              </div>
-            ))}
-          </section>
-        )}
 
         {walletActionMessage && <p className="dashboard-message is-success" role="status">{walletActionMessage}</p>}
         {walletActionError && !walletAction && <p className="dashboard-message is-error" role="alert">{walletActionError}</p>}
@@ -619,15 +622,10 @@ function Dashboard() {
         <section className="dashboard-section recent-section" id="recent-activity">
           <div className="section-heading">
             <h2>Recent Activity</h2>
-            {dashboard.recentActivity.length > 0 && (
-              <button className="text-action" type="button" disabled>
-                View all <Icon name="chevron" />
-              </button>
-            )}
           </div>
-          {dashboard.recentActivity.length ? (
+          {recentActivity.length ? (
             <div className="activity-list">
-              {dashboard.recentActivity.map((item) => (
+              {recentActivity.slice(0, 10).map((item) => (
                 <article className="activity-card" key={item.id}>
                   <span className={`activity-icon ${item.type === 'investment' ? 'is-investment' : ''}`}><Icon name={item.type === 'investment' ? 'invest' : 'portfolio'} /></span>
                   <div className="activity-description">
@@ -635,8 +633,9 @@ function Dashboard() {
                     <small>{item.source || 'GWIC account'}</small>
                   </div>
                   <div className="activity-amount">
-                    <strong>{displayAmount(item.amount)}</strong>
+                    <strong>{item.transactionType === 'withdrawal' ? '−' : item.transactionType === 'deposit' ? '+' : ''}{displayAmount(item.amount)}</strong>
                     <small>{new Date(item.createdAt).toLocaleString()}</small>
+                    {item.status && <small className={`wallet-transaction-status is-${item.status}`}>{item.status.replaceAll('_', ' ')}</small>}
                   </div>
                 </article>
               ))}

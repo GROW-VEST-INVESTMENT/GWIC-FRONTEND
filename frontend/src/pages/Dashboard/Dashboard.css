@@ -438,41 +438,18 @@
   white-space: nowrap;
 }
 
-.wallet-transactions {
-  display: grid;
-  gap: 8px;
-  padding: 0 4px;
-}
-
-.wallet-transactions > strong {
-  color: #355c49;
-  font-size: 0.8rem;
-}
-
-.wallet-transaction {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 12px;
-  padding: 9px 12px;
-  border-radius: 10px;
-  background: #fff;
-  color: #315342;
-  font-size: 0.78rem;
-}
-
 .wallet-transaction-status {
   color: #78877f;
   font-size: 0.69rem;
   text-transform: capitalize;
 }
 
-.wallet-transaction-status.is-successful {
+.activity-amount .wallet-transaction-status.is-successful {
   color: #087849;
 }
 
-.wallet-transaction-status.is-failed,
-.wallet-transaction-status.is-reversed {
+.activity-amount .wallet-transaction-status.is-failed,
+.activity-amount .wallet-transaction-status.is-reversed {
   color: #a23e3e;
 }
 
@@ -882,11 +859,6 @@
   font-size: 0.88rem;
 }
 
-.section-meta {
-  color: #71867d;
-  font-size: 0.78rem;
-}
-
 .dashboard-message {
   padding: 10px 13px;
   border-left: 3px solid #13804d;
@@ -1139,13 +1111,7 @@
     font-size: 0.64rem;
   }
 
-  .wallet-transaction {
-    gap: 6px;
-    padding: 8px;
-    font-size: 0.69rem;
-  }
-
-  .wallet-transaction-status {
+  .activity-amount .wallet-transaction-status {
     font-size: 0.62rem;
   }
 
