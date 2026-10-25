@@ -249,24 +249,6 @@ select.access-input:invalid {
   line-height: 1.4;
 }
 
-.preview-notice {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  margin-top: 19px;
-  color: #607268;
-  font-size: 0.77rem;
-  line-height: 1.4;
-}
-
-.preview-notice input {
-  width: 15px;
-  height: 15px;
-  flex: 0 0 auto;
-  margin-top: 1px;
-  accent-color: #087544;
-}
-
 .access-submit {
   display: flex;
   min-height: 51px;
@@ -289,6 +271,12 @@ select.access-input:invalid {
   background: #005b37;
 }
 
+.access-submit:disabled {
+  cursor: wait;
+  opacity: 0.75;
+  transform: none;
+}
+
 .access-submit span {
   font-size: 1.3rem;
   font-weight: 400;
@@ -297,11 +285,20 @@ select.access-input:invalid {
 .form-status {
   margin-top: 13px;
   padding: 11px 12px;
+  font-size: 0.81rem;
+  line-height: 1.45;
+}
+
+.form-status.is-error {
   border-left: 3px solid #d6a332;
   background: #fff8e7;
   color: #604914;
-  font-size: 0.81rem;
-  line-height: 1.45;
+}
+
+.form-status.is-success {
+  border-left: 3px solid #16824d;
+  background: #eff8f1;
+  color: #175b37;
 }
 
 .access-switch {

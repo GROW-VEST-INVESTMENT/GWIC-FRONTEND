@@ -38,16 +38,54 @@ function AccountAccess() {
   const [selectedProduct, setSelectedProduct] = useState(
     productOptions.some((option) => option.value === requestedProduct) ? requestedProduct : 'undecided',
   );
-  const [notice, setNotice] = useState('');
+  const [notice, setNotice] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    setNotice({
-      route: location.pathname,
-      message: isLogin
-        ? 'Login is a preview. Authentication is not connected yet.'
-        : 'Signup is a preview. Your details have not been sent or saved; account registration is not connected yet.',
-    });
+    setNotice(null);
+
+    setIsSubmitting(true);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    try {
+      const defaultApiUrl = import.meta.env.PROD
+        ? 'https://gwic-backend.onrender.com'
+        : 'http://localhost:5000';
+      const apiBaseUrl = (import.meta.env.VITE_API_URL || defaultApiUrl).replace(/\/+$/, '');
+      const response = await fetch(`${apiBaseUrl}/api/auth/${isLogin ? 'login' : 'register'}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.fromEntries(formData.entries())),
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'We could not create your account. Please try again.');
+      }
+
+      form.reset();
+      if (!isLogin) {
+        setSelectedProduct('undecided');
+      }
+      setNotice({
+        type: 'success',
+        message: isLogin
+          ? `Welcome back, ${result.user.name}.`
+          : 'Your account has been created successfully. You can now log in.',
+      });
+    } catch (error) {
+      setNotice({
+        type: 'error',
+        message: error instanceof TypeError
+          ? 'Could not reach the server. Please try again in a moment.'
+          : error.message,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -135,18 +173,15 @@ function AccountAccess() {
               type="password"
             />
 
-            {!isLogin && (
-              <label className="preview-notice">
-                <input required type="checkbox" />
-                <span>I understand this is a signup preview and my details will not be submitted.</span>
-              </label>
-            )}
-
-            <button className="access-submit" type="submit">
-              {isLogin ? 'Log In' : 'Create account'} <span aria-hidden="true">→</span>
+            <button className="access-submit" disabled={isSubmitting} type="submit">
+              {isSubmitting ? (isLogin ? 'Logging in…' : 'Creating account…') : isLogin ? 'Log In' : 'Create account'} <span aria-hidden="true">→</span>
             </button>
 
-            {notice?.route === location.pathname && <p className="form-status" role="status">{notice.message}</p>}
+            {notice && (
+              <p className={`form-status is-${notice.type}`} role={notice.type === 'error' ? 'alert' : 'status'}>
+                {notice.message}
+              </p>
+            )}
           </form>
 
           <p className="access-switch">
