@@ -622,10 +622,13 @@ function Dashboard() {
         <section className="dashboard-section recent-section" id="recent-activity">
           <div className="section-heading">
             <h2>Recent Activity</h2>
+            <Link className="text-action" to="/activity">
+              See all <Icon name="chevron" />
+            </Link>
           </div>
           {recentActivity.length ? (
             <div className="activity-list">
-              {recentActivity.slice(0, 10).map((item) => (
+              {recentActivity.slice(0, 2).map((item) => (
                 <article className="activity-card" key={item.id}>
                   <span className={`activity-icon ${item.type === 'investment' ? 'is-investment' : ''}`}><Icon name={item.type === 'investment' ? 'invest' : 'portfolio'} /></span>
                   <div className="activity-description">
