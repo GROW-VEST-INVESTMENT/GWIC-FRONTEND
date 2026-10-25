@@ -804,6 +804,8 @@
 
 @media (max-width: 640px) {
   .dashboard-app {
+    width: 100%;
+    overflow-x: clip;
     padding: 0 0 90px;
     background:
       linear-gradient(180deg, #003f2c 0, #003321 clamp(190px, 62vw, 240px), #f8fbf9 clamp(190px, 62vw, 240px), #f8fbf9 100%);
@@ -1092,6 +1094,10 @@
 
   .goal-form .dashboard-button {
     width: 100%;
+  }
+
+  .goal-form input {
+    font-size: 16px;
   }
 
   .empty-card {
