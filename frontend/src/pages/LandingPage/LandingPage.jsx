@@ -58,7 +58,7 @@ function DashboardPreview() {
             <BrandMark />
             <div><strong>GWIC</strong><small>GrowWithCore</small></div>
           </div>
-          <div className="balance-label">Total Balance</div>
+          <div className="balance-label">Wallet Balance</div>
           <div className="balance-amount">₦750,432.50</div>
           <div className="balance-change"><span>↗ +12.5%</span><small>vs. last month</small></div>
           <svg className="balance-chart" viewBox="0 0 420 150" role="img" aria-label="Rising balance chart">

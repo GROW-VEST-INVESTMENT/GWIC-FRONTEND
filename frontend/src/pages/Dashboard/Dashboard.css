@@ -400,44 +400,6 @@
   height: 23px;
 }
 
-.wallet-overview {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 17px 20px;
-  border: 1px solid #d9eae0;
-  border-radius: 16px;
-  background: linear-gradient(110deg, #eef8f2, #fff);
-}
-
-.wallet-overview > div {
-  display: grid;
-  gap: 3px;
-}
-
-.wallet-overview > div > span {
-  color: #496e5a;
-  font-size: 0.8rem;
-  font-weight: 680;
-}
-
-.wallet-overview > div > strong {
-  color: #12432f;
-  font-size: 1.4rem;
-  font-weight: 800;
-}
-
-.wallet-overview > div > small,
-.wallet-provider {
-  color: #6d8579;
-  font-size: 0.73rem;
-}
-
-.wallet-provider {
-  white-space: nowrap;
-}
-
 .wallet-transaction-status {
   color: #78877f;
   font-size: 0.69rem;
@@ -547,7 +509,12 @@
 
 .wallet-dialog.is-withdrawal {
   width: min(100%, 500px);
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  align-content: start;
   gap: 14px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .withdrawal-steps {
@@ -1312,20 +1279,6 @@
   .quick-actions {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 8px;
-  }
-
-  .wallet-overview {
-    padding: 11px 13px;
-    border-radius: 13px;
-  }
-
-  .wallet-overview > div > strong {
-    font-size: 1.15rem;
-  }
-
-  .wallet-overview > div > small,
-  .wallet-provider {
-    font-size: 0.64rem;
   }
 
   .activity-amount .wallet-transaction-status {

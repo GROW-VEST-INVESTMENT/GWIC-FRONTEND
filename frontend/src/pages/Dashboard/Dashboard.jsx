@@ -495,10 +495,10 @@ function Dashboard() {
         </section>
 
         {error && <p className="dashboard-message is-error" role="alert">{error}</p>}
-        <section className="balance-card" aria-label="Account balance">
+        <section className="balance-card" aria-label="Wallet balance">
           <div className="balance-copy">
             <div className="balance-label-row">
-              <span>Total Balance</span>
+              <span>Wallet Balance</span>
               <button
                 aria-label={hideBalance ? 'Show balances' : 'Hide balances'}
                 aria-pressed={hideBalance}
@@ -509,7 +509,8 @@ function Dashboard() {
                 <Icon name="eye" />
               </button>
             </div>
-            <strong>{displayAmount(dashboard.balances.total)}</strong>
+            <strong>{displayAmount(dashboard.wallet.balance)}</strong>
+            <p>Confirmed wallet funds available to withdraw. Savings goals are shown separately.</p>
             {hasMonthlyChange && (
               <div className={`balance-performance is-${performanceDirection}`}>
                 <span aria-hidden="true">{monthlyChange > 0 ? '+' : monthlyChange < 0 ? '−' : ''}{Math.abs(monthlyChange)}%</span>
@@ -562,15 +563,6 @@ function Dashboard() {
               <span>{action.label}</span>
             </button>
           ))}
-        </section>
-
-        <section className="wallet-overview" aria-label="Paystack wallet">
-          <div>
-            <span>Available wallet balance</span>
-            <strong>{displayAmount(dashboard.wallet.balance)}</strong>
-            <small>Only confirmed payments are included.</small>
-          </div>
-          <span className="wallet-provider">Secured by Paystack</span>
         </section>
 
         {walletActionMessage && (
@@ -739,13 +731,13 @@ function Dashboard() {
           </div>
         )}
 
-        <section className="account-balances" id="account-balances" aria-label="Savings and investment balances">
+        <section className="account-balances" id="account-balances" aria-label="Savings goals and investments">
           <article className="account-balance-card">
             <span className="account-category-icon"><Icon name="savings" /></span>
             <div className="account-balance-copy">
-              <span>Savings</span>
+              <span>Savings goals</span>
               <strong>{displayAmount(dashboard.balances.savings)}</strong>
-              <small>From your savings goals</small>
+              <small>Recorded goal progress, not wallet funds</small>
             </div>
             <Icon name="chevron" />
           </article>
