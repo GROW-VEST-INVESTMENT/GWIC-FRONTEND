@@ -14,6 +14,10 @@
   },
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "https://gwic-backend.onrender.com/api/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": {
         "service": "frontend"

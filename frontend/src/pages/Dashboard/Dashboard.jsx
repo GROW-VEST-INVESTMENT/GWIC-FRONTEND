@@ -3,11 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
 function getApiBaseUrl() {
-  const defaultApiUrl = import.meta.env.PROD
-    ? 'https://gwic-backend.onrender.com'
-    : 'http://localhost:5000';
+  const defaultApiUrl = import.meta.env.PROD ? '' : 'http://localhost:5000';
 
-  return (import.meta.env.VITE_API_URL || defaultApiUrl).replace(/\/+$/, '');
+  return import.meta.env.PROD
+    ? ''
+    : (import.meta.env.VITE_API_URL || defaultApiUrl).replace(/\/+$/, '');
 }
 
 const navigation = [
