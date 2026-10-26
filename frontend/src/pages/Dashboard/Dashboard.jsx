@@ -440,6 +440,7 @@ function Dashboard() {
               <Icon name={item.icon} />{item.label}
             </button>
           ))}
+          <button onClick={() => navigate('/more')} type="button"><Icon name="more" />More</button>
         </nav>
         <div className="dashboard-profile">
           <button aria-label="Notifications are not available yet" className="notification-button" disabled type="button">
@@ -509,7 +510,7 @@ function Dashboard() {
           )}
         </section>
 
-        <section className="quick-actions" aria-label="Account actions">
+        <section className="quick-actions" id="wallet-actions" aria-label="Account actions">
           {quickActions.map((action) => (
             <button
               className="quick-action"
@@ -813,7 +814,7 @@ function Dashboard() {
             <Icon name={item.icon} /><span>{item.label}</span>
           </button>
         ))}
-        <button aria-label="More options are not available yet" disabled type="button">
+        <button aria-label="More" onClick={() => navigate('/more')} type="button">
           <Icon name="more" /><span>More</span>
         </button>
       </nav>

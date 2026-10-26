@@ -6,6 +6,7 @@ import CoreLock from './pages/CoreLock/CoreLock';
 import Activity from './pages/Activity/Activity';
 import CreateGoal from './pages/CreateGoal/CreateGoal';
 import SavingsGoals from './pages/SavingsGoals/SavingsGoals';
+import More from './pages/More/More';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/create-goal" element={<CreateGoal />} />
         <Route path="/goals" element={<SavingsGoals />} />
         <Route path="/activity" element={<Activity />} />
+        <Route path="/more" element={<More />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

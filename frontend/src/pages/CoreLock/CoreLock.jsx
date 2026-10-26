@@ -295,6 +295,7 @@ function CoreLock() {
           <span className="is-current"><Icon name="lock" /> Core Lock</span>
           <Link to="/dashboard"><Icon name="invest" /> Invest</Link>
           <Link to="/dashboard"><Icon name="portfolio" /> Portfolio</Link>
+          <Link to="/more"><Icon name="more" /> More</Link>
         </nav>
         <div className="core-lock-profile">
           <button aria-label="Notifications are not available yet" className="core-lock-notifications" disabled type="button"><Icon name="bell" /></button>
@@ -523,7 +524,7 @@ function CoreLock() {
         <Link aria-current="page" className="is-active" to="/core-lock"><Icon name="lock" /><span>Core Lock</span></Link>
         <Link to="/dashboard"><Icon name="invest" /><span>Invest</span></Link>
         <Link to="/dashboard"><Icon name="portfolio" /><span>Portfolio</span></Link>
-        <button aria-label="More options are not available yet" disabled type="button"><Icon name="more" /><span>More</span></button>
+        <Link to="/more"><Icon name="more" /><span>More</span></Link>
       </nav>
     </div>
   );

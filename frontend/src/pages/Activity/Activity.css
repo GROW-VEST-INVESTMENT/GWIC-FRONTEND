@@ -502,8 +502,8 @@
     left: 0;
     display: grid;
     min-height: calc(63px + env(safe-area-inset-bottom));
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    padding: 8px 12px max(8px, env(safe-area-inset-bottom));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: 7px 5px max(8px, env(safe-area-inset-bottom));
     border-top: 1px solid #e3ece6;
     background: rgba(255, 255, 255, 0.97);
     box-shadow: 0 -5px 18px rgba(21, 52, 37, 0.06);
@@ -513,10 +513,17 @@
     display: grid;
     align-content: center;
     justify-items: center;
+    gap: 2px;
     color: #647b70;
-    font-size: 0.71rem;
-    font-weight: 680;
+    font-size: 0.68rem;
+    font-weight: 650;
     text-decoration: none;
+  }
+
+  .activity-nav-icon {
+    width: 25px;
+    height: 25px;
+    stroke-width: 2.1;
   }
 
   .activity-mobile-nav a[aria-current="page"] {

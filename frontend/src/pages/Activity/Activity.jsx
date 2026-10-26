@@ -21,6 +21,22 @@ function ActivityIcon({ type }) {
   );
 }
 
+function ActivityNavIcon({ name }) {
+  const paths = {
+    home: <><path d="m3 11 9-8 9 8" /><path d="M5 10v10h5v-6h4v6h5V10" /></>,
+    lock: <><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
+    invest: <><path d="M3 20h18M5 17v-5h3v5m3 0V9h3v8m3 0V5h3v12" /><path d="m5 9 5-4 4 2 6-5" /></>,
+    portfolio: <><rect x="4" y="5" width="16" height="16" rx="2" /><path d="M8 3v4m8-4v4M8 16h2l2-3 2 2 3-4" /></>,
+    more: <path d="M3 6h18M3 12h18M3 18h18" />,
+  };
+
+  return (
+    <svg aria-hidden="true" className="activity-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      {paths[name]}
+    </svg>
+  );
+}
+
 function formatMoney(amount) {
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',
@@ -132,6 +148,7 @@ function Activity() {
         <nav aria-label="Account navigation" className="desktop-dashboard-nav">
           <Link to="/dashboard">Dashboard</Link>
           <span aria-current="page">Activity</span>
+          <Link to="/more">More</Link>
         </nav>
         <Link className="activity-header-back" to="/dashboard">Back to dashboard</Link>
       </header>
@@ -234,9 +251,11 @@ function Activity() {
       </main>
 
       <nav aria-label="Mobile account navigation" className="activity-mobile-nav">
-        <Link to="/dashboard">Dashboard</Link>
-        <Link aria-current="page" to="/activity">Activity</Link>
-        <Link to="/core-lock">Core Lock</Link>
+        <Link to="/dashboard"><ActivityNavIcon name="home" /><span>Home</span></Link>
+        <Link to="/core-lock"><ActivityNavIcon name="lock" /><span>Core Lock</span></Link>
+        <Link to="/dashboard#account-balances"><ActivityNavIcon name="invest" /><span>Invest</span></Link>
+        <Link aria-current="page" to="/activity"><ActivityNavIcon name="portfolio" /><span>Portfolio</span></Link>
+        <Link to="/more"><ActivityNavIcon name="more" /><span>More</span></Link>
       </nav>
     </div>
   );

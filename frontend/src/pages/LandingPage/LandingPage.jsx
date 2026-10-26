@@ -164,7 +164,7 @@ function LandingPage() {
         </div>
       </section>
 
-      <section className="faq-section" aria-labelledby="faq-title">
+      <section className="faq-section" id="faq" aria-labelledby="faq-title">
         <div className="faq-intro">
           <span className="faq-eyebrow">A CLEARER START</span>
           <h2 id="faq-title">Before you choose</h2>
