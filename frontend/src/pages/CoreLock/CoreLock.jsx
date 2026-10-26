@@ -293,8 +293,8 @@ function CoreLock() {
         <nav className="core-lock-desktop-nav" aria-label="Account navigation">
           <Link to="/dashboard"><Icon name="home" /> Home</Link>
           <span className="is-current"><Icon name="lock" /> Core Lock</span>
-          <Link to="/dashboard"><Icon name="invest" /> Invest</Link>
-          <Link to="/dashboard"><Icon name="portfolio" /> Portfolio</Link>
+          <Link to="/dashboard#account-balances"><Icon name="invest" /> Invest</Link>
+          <Link to="/activity"><Icon name="portfolio" /> Portfolio</Link>
           <Link to="/more"><Icon name="more" /> More</Link>
         </nav>
         <div className="core-lock-profile">
@@ -522,8 +522,8 @@ function CoreLock() {
       <nav aria-label="Mobile dashboard navigation" className="core-lock-mobile-nav">
         <Link to="/dashboard"><Icon name="home" /><span>Home</span></Link>
         <Link aria-current="page" className="is-active" to="/core-lock"><Icon name="lock" /><span>Core Lock</span></Link>
-        <Link to="/dashboard"><Icon name="invest" /><span>Invest</span></Link>
-        <Link to="/dashboard"><Icon name="portfolio" /><span>Portfolio</span></Link>
+        <Link to="/dashboard#account-balances"><Icon name="invest" /><span>Invest</span></Link>
+        <Link to="/activity"><Icon name="portfolio" /><span>Portfolio</span></Link>
         <Link to="/more"><Icon name="more" /><span>More</span></Link>
       </nav>
     </div>

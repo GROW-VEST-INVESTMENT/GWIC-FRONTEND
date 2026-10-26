@@ -6,7 +6,7 @@ const navigation = [
   { label: 'Home', icon: 'home', target: 'dashboard-top' },
   { label: 'Core Lock', icon: 'lock', path: '/core-lock' },
   { label: 'Invest', icon: 'invest', target: 'account-balances' },
-  { label: 'Portfolio', icon: 'portfolio', target: 'recent-activity' },
+  { label: 'Portfolio', icon: 'portfolio', path: '/activity' },
 ];
 
 const quickActions = [
@@ -189,6 +189,15 @@ function Dashboard() {
       isActive = false;
     };
   }, [navigate]);
+
+  useEffect(() => {
+    if (!dashboard || !location.hash) return undefined;
+    const targetId = decodeURIComponent(location.hash.slice(1));
+    const frameId = window.requestAnimationFrame(() => {
+      document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    return () => window.cancelAnimationFrame(frameId);
+  }, [dashboard, location.hash]);
 
   useEffect(() => {
     if (!dashboard || new URLSearchParams(location.search).get('createGoal') !== '1') return;
