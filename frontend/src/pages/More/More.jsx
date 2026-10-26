@@ -19,6 +19,7 @@ function MoreIcon({ name, className = '' }) {
   const paths = {
     arrowLeft: <path d="m15 18-6-6 6-6M9 12h12" />,
     eye: <><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" /></>,
+    eyeOff: <><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8" /><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a15.8 15.8 0 0 1-3.1 3.8M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7a10 10 0 0 0 4-.8" /></>,
     camera: <><path d="M14 5h-4L8.5 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.5L14 5Z" /><circle cx="12" cy="13" r="3" /></>,
     person: <><circle cx="12" cy="8" r="3.5" /><path d="M4.5 20c.5-4 3-6 7.5-6s7 2 7.5 6" /></>,
     shield: <><path d="M12 3 20 6v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-3Z" /><path d="m8.5 12 2.2 2.2 4.8-5" /></>,
@@ -52,10 +53,43 @@ function More() {
   const [account, setAccount] = useState(null);
   const [walletBalance, setWalletBalance] = useState(null);
   const [activePanel, setActivePanel] = useState('');
-  const [hideBalance, setHideBalance] = useState(false);
+  const [isLoadingAccount, setIsLoadingAccount] = useState(true);
+  const [balancePreference, setBalancePreference] = useState(() => {
+    try {
+      return {
+        hideBalance: window.localStorage.getItem('gwic.hideWalletBalance') === 'true',
+        message: '',
+      };
+    } catch {
+      return {
+        hideBalance: false,
+        message: 'This browser could not restore your balance privacy preference.',
+      };
+    }
+  });
+  const [privacyNotice, setPrivacyNotice] = useState('');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [error, setError] = useState('');
+  const [accountError, setAccountError] = useState('');
+  const [actionError, setActionError] = useState('');
   const [retryKey, setRetryKey] = useState(0);
+  const hideBalance = balancePreference.hideBalance;
+
+  function updateBalancePrivacy(hide) {
+    try {
+      window.localStorage.setItem('gwic.hideWalletBalance', String(hide));
+      setBalancePreference({
+        hideBalance: hide,
+        message: 'Preference saved on this device.',
+      });
+      setPrivacyNotice('');
+    } catch {
+      setBalancePreference({
+        hideBalance: hide,
+        message: 'This browser could not save the preference. It applies for this visit only.',
+      });
+      setPrivacyNotice('Balance privacy could not be saved on this device. It applies for this visit only.');
+    }
+  }
 
   useEffect(() => {
     if (!activePanel) return undefined;
@@ -95,6 +129,8 @@ function More() {
     const controller = new AbortController();
 
     async function loadAccount() {
+      setIsLoadingAccount(true);
+      setAccountError('');
       try {
         const [accountResponse, walletResponse] = await Promise.all([
           fetch('/api/dashboard', { credentials: 'include', headers: { Accept: 'application/json' }, signal: controller.signal }),
@@ -112,10 +148,12 @@ function More() {
         setWalletBalance(walletData.balance);
       } catch (requestError) {
         if (requestError.name !== 'AbortError') {
-          setError(requestError instanceof TypeError
+          setAccountError(requestError instanceof TypeError
             ? 'We could not reach GWIC. Check your connection and try again.'
             : requestError.message);
         }
+      } finally {
+        if (!controller.signal.aborted) setIsLoadingAccount(false);
       }
     }
 
@@ -125,22 +163,28 @@ function More() {
 
   async function handleLogout() {
     setIsLoggingOut(true);
-    setError('');
+    setActionError('');
     try {
       const response = await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
       if (!response.ok) throw new Error('Logout could not be confirmed. Please try again.');
       setActivePanel('');
       navigate('/login', { replace: true });
     } catch (requestError) {
-      setError(requestError instanceof TypeError
+      setActionError(requestError instanceof TypeError
         ? 'We could not reach GWIC. Check your connection and try again.'
         : requestError.message);
       setIsLoggingOut(false);
     }
   }
 
+  function retryAccountLoad() {
+    setAccountError('');
+    setIsLoadingAccount(true);
+    setRetryKey((key) => key + 1);
+  }
+
   const money = walletBalance === null
-    ? '—'
+    ? isLoadingAccount ? 'Loading…' : 'Unavailable'
     : hideBalance
       ? '••••••••'
       : new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 2 }).format(walletBalance);
@@ -174,10 +218,14 @@ function More() {
             <span aria-hidden="true" className="more-profile-camera"><MoreIcon name="camera" /></span>
           </span>
           <span className="more-profile-copy">
-            <strong>{account?.name || 'Your account'}</strong>
-            <small>{account?.email || 'Loading account…'}</small>
-            <span className={`more-verification ${account?.isKycVerified ? 'is-verified' : ''}`}>
-              <MoreIcon name="shield" />{account?.isKycVerified ? 'Verified Account' : 'Verification needed'}
+            <strong>{account?.name || (isLoadingAccount ? 'Loading your account…' : 'Your account')}</strong>
+            <small>{account?.email || (isLoadingAccount ? 'Please wait' : 'Account details unavailable')}</small>
+            <span className={`more-verification ${account?.isKycVerified ? 'is-verified' : ''} ${isLoadingAccount ? 'is-loading' : ''}`}>
+              <MoreIcon name="shield" />{isLoadingAccount
+                ? 'Checking verification'
+                : account?.isKycVerified
+                  ? 'Verified Account'
+                  : account ? 'Verification needed' : 'Status unavailable'}
             </span>
           </span>
           <MoreIcon className="more-profile-chevron" name="chevron" />
@@ -189,8 +237,13 @@ function More() {
           <div className="more-value-copy">
             <div className="more-value-label">
               <span>Wallet Balance</span>
-              <button aria-label={hideBalance ? 'Show balance' : 'Hide balance'} onClick={() => setHideBalance((hidden) => !hidden)} type="button">
-                <MoreIcon name="eye" />
+              <button
+                aria-label={hideBalance ? 'Show wallet balance' : 'Hide wallet balance'}
+                aria-pressed={hideBalance}
+                onClick={() => updateBalancePrivacy(!hideBalance)}
+                type="button"
+              >
+                <MoreIcon name={hideBalance ? 'eyeOff' : 'eye'} />
               </button>
             </div>
             <strong>{money}</strong>
@@ -203,10 +256,12 @@ function More() {
           </div>
         </section>
 
-        {error && !activePanel && (
+        {privacyNotice && <p className="more-privacy-notice" role="status">{privacyNotice}</p>}
+
+        {accountError && !activePanel && (
           <div className="more-error" role="alert">
-            <span>{error}</span>
-            <button onClick={() => { setError(''); setRetryKey((key) => key + 1); }} type="button">Retry</button>
+            <span>{accountError}</span>
+            <button onClick={retryAccountLoad} type="button">Retry</button>
           </div>
         )}
 
@@ -214,7 +269,8 @@ function More() {
           {settings.map((item) => (
             <button
               aria-expanded={activePanel === item.id}
-              aria-haspopup={item.id === 'logout' ? undefined : 'dialog'}
+              aria-controls="more-settings-dialog"
+              aria-haspopup="dialog"
               className="more-setting-row"
               disabled={item.id === 'logout' && isLoggingOut}
               key={item.id}
@@ -238,32 +294,46 @@ function More() {
           <div className="more-dialog-backdrop" onMouseDown={(event) => {
             if (event.target === event.currentTarget) setActivePanel('');
           }}>
-            <section aria-labelledby="more-detail-title" aria-modal="true" className="more-detail-panel" ref={dialogRef} role="dialog">
+            <section aria-labelledby="more-detail-title" aria-modal="true" className="more-detail-panel" id="more-settings-dialog" ref={dialogRef} role="dialog">
               <div className="more-detail-handle" />
               <button aria-label="Close details" autoFocus className="more-detail-close" onClick={() => setActivePanel('')} type="button">×</button>
-              {error && <p className="more-dialog-error" role="alert">{error}</p>}
+              {accountError && (
+                <div className="more-dialog-error" role="alert">
+                  <span>{accountError}</span>
+                  <button onClick={retryAccountLoad} type="button">Retry</button>
+                </div>
+              )}
+              {actionError && <p className="more-dialog-error" role="alert">{actionError}</p>}
               {activePanel === 'personal' && (
                 <>
                   <h2 id="more-detail-title">Personal Information</h2>
-                  <dl>
-                    <div><dt>Full name</dt><dd>{account?.name || '—'}</dd></div>
-                    <div><dt>Email address</dt><dd>{account?.email || '—'}</dd></div>
-                    <div><dt>Phone number</dt><dd>{account?.phone || 'Not provided'}</dd></div>
-                  </dl>
-                  <p className="more-detail-note">Need to update your details? Profile editing is not available yet.</p>
+                  {isLoadingAccount
+                    ? <p aria-live="polite">Loading your account details…</p>
+                    : account
+                      ? <dl>
+                        <div><dt>Full name</dt><dd>{account.name}</dd></div>
+                        <div><dt>Email address</dt><dd>{account.email}</dd></div>
+                        <div><dt>Phone number</dt><dd>{account.phone || 'Not provided'}</dd></div>
+                      </dl>
+                      : <p role="alert">Your account details could not be loaded. Use Retry above to try again.</p>}
+                  <p className="more-detail-note">Need to update your details or profile photo? Editing is not available yet.</p>
                 </>
               )}
               {activePanel === 'kyc' && (
                 <>
                   <h2 id="more-detail-title">KYC & Verification</h2>
-                  <div className={`more-status-card ${account?.isKycVerified ? 'is-complete' : ''}`}>
-                    <MoreIcon name="shield" />
-                    <span><strong>{account?.isKycVerified ? 'Verified account' : 'Verification not complete'}</strong>
-                      <small>{account?.isKycVerified
-                        ? 'Your account verification is confirmed.'
-                        : 'Identity verification is not available yet. Core savings remains unavailable until verification is completed.'}</small>
-                    </span>
-                  </div>
+                  {isLoadingAccount
+                    ? <p aria-live="polite">Checking your verification status…</p>
+                    : account
+                      ? <div className={`more-status-card ${account.isKycVerified ? 'is-complete' : ''}`}>
+                        <MoreIcon name="shield" />
+                        <span><strong>{account.isKycVerified ? 'Verified account' : 'Verification not complete'}</strong>
+                          <small>{account.isKycVerified
+                            ? 'Your account verification is confirmed.'
+                            : 'Identity verification is not available yet. Core savings remains unavailable until verification is completed.'}</small>
+                        </span>
+                      </div>
+                      : <p role="alert">We could not load your verification status. Please retry from the More page.</p>}
                 </>
               )}
               {activePanel === 'banks' && (
@@ -294,8 +364,14 @@ function More() {
                   <h2 id="more-detail-title">Preferences</h2>
                   <label className="more-balance-toggle">
                     <span><strong>Hide wallet balance</strong><small>Keep your balance private on this screen.</small></span>
-                    <input checked={hideBalance} onChange={(event) => setHideBalance(event.target.checked)} type="checkbox" role="switch" />
+                    <input
+                      checked={hideBalance}
+                      onChange={(event) => updateBalancePrivacy(event.target.checked)}
+                      type="checkbox"
+                      role="switch"
+                    />
                   </label>
+                  <p aria-live="polite" className="more-preference-message">{balancePreference.message || 'Your preference is saved on this device.'}</p>
                 </>
               )}
               {activePanel === 'help' && (
