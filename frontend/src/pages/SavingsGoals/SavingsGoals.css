@@ -1,0 +1,202 @@
+.savings-goals-page {
+  min-height: 100vh;
+  padding: 0 24px 48px;
+  background: #f5f9f6;
+  color: #153b2e;
+}
+
+.savings-goals-header {
+  display: flex;
+  width: min(100%, 900px);
+  min-height: 76px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 auto;
+}
+
+.savings-goals-back {
+  color: #176b47;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.savings-goals-create {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border-radius: 9px;
+  background: #087447;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 720;
+  text-decoration: none;
+}
+
+.savings-goals-create:hover {
+  background: #005b38;
+}
+
+.savings-goals-content {
+  display: grid;
+  width: min(100%, 900px);
+  gap: 22px;
+  margin: 28px auto 0;
+}
+
+.savings-goals-intro {
+  display: grid;
+  gap: 8px;
+}
+
+.savings-goals-intro > span {
+  color: #238354;
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.savings-goals-intro h1 {
+  color: #104331;
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-weight: 820;
+  letter-spacing: -0.04em;
+}
+
+.savings-goals-intro p {
+  max-width: 650px;
+  color: #657a70;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.savings-goals-list {
+  display: grid;
+  gap: 12px;
+}
+
+.savings-goals-count {
+  color: #64796e;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.savings-goal-card,
+.savings-goals-empty {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid #e4eee8;
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(17, 61, 40, 0.05);
+}
+
+.savings-goal-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.savings-goal-card-heading h2,
+.savings-goals-empty h2 {
+  color: #183e2e;
+  font-size: 1rem;
+  font-weight: 760;
+}
+
+.savings-goal-card-heading p,
+.savings-goal-plan {
+  margin-top: 4px;
+  color: #75887e;
+  font-size: 0.78rem;
+}
+
+.savings-goal-card-heading > strong {
+  color: #087849;
+  font-size: 0.92rem;
+}
+
+.savings-goal-progress {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #e5eee9;
+}
+
+.savings-goal-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0b8651, #27b873);
+}
+
+.savings-goal-amounts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  color: #71867d;
+  font-size: 0.78rem;
+}
+
+.savings-goal-amounts strong {
+  margin-left: 5px;
+  color: #264d3a;
+  font-size: 0.84rem;
+}
+
+.savings-goals-empty {
+  justify-items: start;
+  padding: 28px;
+}
+
+.savings-goals-empty > p {
+  color: #657a70;
+  font-size: 0.88rem;
+}
+
+.savings-goals-state {
+  padding: 18px;
+  border-radius: 12px;
+  background: #fff;
+  color: #456354;
+}
+
+.savings-goals-state.is-error {
+  display: grid;
+  gap: 12px;
+  border-left: 3px solid #ba4848;
+  background: #fff0ee;
+  color: #833a37;
+}
+
+.savings-goals-state button {
+  width: fit-content;
+  padding: 9px 14px;
+  border-radius: 8px;
+  background: #087447;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+@media (max-width: 540px) {
+  .savings-goals-page {
+    padding-inline: 16px;
+  }
+
+  .savings-goals-content {
+    margin-top: 16px;
+  }
+
+  .savings-goal-card,
+  .savings-goals-empty {
+    padding: 15px;
+  }
+}

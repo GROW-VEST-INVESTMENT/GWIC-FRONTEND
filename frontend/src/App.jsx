@@ -4,6 +4,8 @@ import AccountAccess from './pages/AccountAccess/AccountAccess';
 import Dashboard from './pages/Dashboard/Dashboard';
 import CoreLock from './pages/CoreLock/CoreLock';
 import Activity from './pages/Activity/Activity';
+import CreateGoal from './pages/CreateGoal/CreateGoal';
+import SavingsGoals from './pages/SavingsGoals/SavingsGoals';
 
 function App() {
   return (
@@ -15,6 +17,8 @@ function App() {
         <Route path="/forgot-password" element={<AccountAccess />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/core-lock" element={<CoreLock />} />
+        <Route path="/create-goal" element={<CreateGoal />} />
+        <Route path="/goals" element={<SavingsGoals />} />
         <Route path="/activity" element={<Activity />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

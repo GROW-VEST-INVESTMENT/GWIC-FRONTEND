@@ -69,6 +69,14 @@ function formatGoalMoney(amount, currency = 'NGN') {
   }).format(amount || 0);
 }
 
+function formatGoalDate(value) {
+  if (!value) return '';
+  const [year, month, day] = value.slice(0, 10).split('-').map(Number);
+  if (!year || !month || !day) return '';
+  return new Intl.DateTimeFormat('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })
+    .format(new Date(year, month - 1, day));
+}
+
 function getGoalIcon(name) {
   const normalizedName = name.toLowerCase();
   if (/(car|vehicle|transport)/.test(normalizedName)) return 'car';
@@ -116,11 +124,7 @@ function Dashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isGoalFormOpen, setIsGoalFormOpen] = useState(
-    () => new URLSearchParams(location.search).get('createGoal') === '1',
-  );
-  const [showAllGoals, setShowAllGoals] = useState(false);
-  const [isSavingGoal, setIsSavingGoal] = useState(false);
+  const [goalNotice] = useState(location.state?.goalNotice || '');
   const [walletAction, setWalletAction] = useState('');
   const [walletActionError, setWalletActionError] = useState('');
   const [walletActionMessage, setWalletActionMessage] = useState('');
@@ -189,8 +193,7 @@ function Dashboard() {
   useEffect(() => {
     if (!dashboard || new URLSearchParams(location.search).get('createGoal') !== '1') return;
 
-    document.getElementById('savings-goals')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    navigate('/dashboard', { replace: true });
+    navigate('/create-goal', { replace: true });
   }, [dashboard, location.search, navigate]);
 
   useEffect(() => {
@@ -356,42 +359,6 @@ function Dashboard() {
     }
   }
 
-  async function handleCreateGoal(event) {
-    event.preventDefault();
-    setError('');
-    setIsSavingGoal(true);
-
-    const formData = new FormData(event.currentTarget);
-    try {
-      const response = await fetch('/api/dashboard/goals', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.get('goal-name'),
-          targetAmount: Number(formData.get('target-amount')),
-        }),
-      });
-      const result = await response.json();
-      if (response.status === 401) {
-        navigate('/login', { replace: true });
-        return;
-      }
-      if (!response.ok) {
-        throw new Error(result.message || 'We could not create this goal.');
-      }
-      setIsGoalFormOpen(false);
-      setIsGoalFormOpen(false);
-      await loadDashboard();
-    } catch (requestError) {
-      setError(requestError instanceof TypeError
-        ? 'We could not reach GWIC. Check your connection and try again.'
-        : requestError.message);
-    } finally {
-      setIsSavingGoal(false);
-    }
-  }
-
   async function handleLogout() {
     setIsLoggingOut(true);
     try {
@@ -495,6 +462,7 @@ function Dashboard() {
         </section>
 
         {error && <p className="dashboard-message is-error" role="alert">{error}</p>}
+        {goalNotice && <p className="dashboard-message is-success" role="status">{goalNotice}</p>}
         <section className="balance-card" aria-label="Wallet balance">
           <div className="balance-copy">
             <div className="balance-label-row">
@@ -553,8 +521,7 @@ function Dashboard() {
                 } else if (action.walletAction) {
                   openWalletAction(action.walletAction);
                 } else {
-                  setIsGoalFormOpen(true);
-                  document.getElementById('savings-goals')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  navigate('/create-goal');
                 }
               }}
               type="button"
@@ -755,40 +722,31 @@ function Dashboard() {
         <section className="dashboard-section" id="savings-goals">
           <div className="section-heading">
             <h2>Your Savings Goals</h2>
-            <button
-              className="text-action"
-              onClick={() => setShowAllGoals((showing) => !showing)}
-              type="button"
-              disabled={dashboard.savingsGoals.length <= 3}
-            >
-              {showAllGoals ? 'Show less' : 'View all'} <Icon name="chevron" />
-            </button>
+            <div className="goal-heading-actions">
+              <Link className="dashboard-button goal-create-link" to="/core-lock">Core Lock</Link>
+              <Link className="text-action" to="/goals">
+                View all <Icon name="chevron" />
+              </Link>
+            </div>
           </div>
-
-          {isGoalFormOpen && (
-            <form className="goal-form" onSubmit={handleCreateGoal}>
-              <label>
-                Goal name
-                <input autoComplete="off" maxLength="80" name="goal-name" placeholder="Enter a goal name" required />
-              </label>
-              <label>
-                Target amount (₦)
-                <input min="1" name="target-amount" placeholder="Enter an amount" required step="1" type="number" />
-              </label>
-              <button className="dashboard-button" disabled={isSavingGoal} type="submit">
-                {isSavingGoal ? 'Saving goal…' : 'Save goal'}
-              </button>
-            </form>
-          )}
 
           {dashboard.savingsGoals.length ? (
             <div className="goal-list">
-              {(showAllGoals ? dashboard.savingsGoals : dashboard.savingsGoals.slice(0, 3)).map((goal) => (
+              {dashboard.savingsGoals.slice(0, 3).map((goal) => (
                 <article className="goal-card" key={goal.id}>
                   <span className="goal-icon"><Icon name={getGoalIcon(goal.name)} /></span>
                   <div className="goal-information">
                     <strong>{goal.name}</strong>
                     <span>{formatGoalMoney(goal.savedAmount, currency)} <span className="goal-target">/ {formatGoalMoney(goal.targetAmount, currency)}</span></span>
+                    {goal.targetDate && (
+                      <small className="goal-plan-meta">
+                        Target {formatGoalDate(goal.targetDate)}
+                        {goal.planDurationDays ? ` · ${goal.planDurationDays}-day plan` : ''}
+                        {goal.plannedContributionAmount
+                          ? ` · ${formatGoalMoney(goal.plannedContributionAmount, currency)} ${goal.plannedContributionFrequency}`
+                          : ''}
+                      </small>
+                    )}
                     <div aria-label={`${goal.progress}% complete`} className="goal-progress"><span style={{ width: `${goal.progress}%` }} /></div>
                   </div>
                   <span className="goal-percentage">{goal.progress}%</span>
@@ -803,7 +761,7 @@ function Dashboard() {
                 <strong>No savings goals yet</strong>
                 <p>Your savings goals will appear here once you create one.</p>
               </div>
-              <button className="dashboard-button" onClick={() => setIsGoalFormOpen(true)} type="button">Create a goal</button>
+              <Link className="dashboard-button" to="/create-goal">Create a goal</Link>
             </div>
           )}
         </section>
