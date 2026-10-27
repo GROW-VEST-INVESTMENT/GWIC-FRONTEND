@@ -202,7 +202,7 @@ function More() {
             <Link to="/dashboard"><MoreIcon name="home" />Home</Link>
             <Link to="/core-lock"><MoreIcon name="core" />Core Lock</Link>
             <Link to="/dashboard#account-balances"><MoreIcon name="invest" />Invest</Link>
-            <Link to="/activity"><MoreIcon name="portfolio" />Portfolio</Link>
+            <Link to="/portfolio"><MoreIcon name="portfolio" />Portfolio</Link>
             <Link aria-current="page" className="is-active" to="/more"><MoreIcon name="more" />More</Link>
           </nav>
           <button aria-label="Notifications" className="more-header-action" onClick={(event) => { dialogTriggerRef.current = event.currentTarget; setActivePanel('notifications'); }} type="button">
@@ -415,7 +415,7 @@ function More() {
         <Link to="/dashboard"><MoreIcon name="home" /><span>Home</span></Link>
         <Link to="/core-lock"><MoreIcon name="core" /><span>Core Lock</span></Link>
         <Link to="/dashboard#account-balances"><MoreIcon name="invest" /><span>Invest</span></Link>
-        <Link to="/activity"><MoreIcon name="portfolio" /><span>Portfolio</span></Link>
+        <Link to="/portfolio"><MoreIcon name="portfolio" /><span>Portfolio</span></Link>
         <Link aria-current="page" className="is-active" to="/more"><MoreIcon name="more" /><span>More</span></Link>
       </nav>
     </div>

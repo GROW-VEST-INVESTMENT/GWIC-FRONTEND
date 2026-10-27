@@ -254,7 +254,7 @@ function Activity() {
         <Link to="/dashboard"><ActivityNavIcon name="home" /><span>Home</span></Link>
         <Link to="/core-lock"><ActivityNavIcon name="lock" /><span>Core Lock</span></Link>
         <Link to="/dashboard#account-balances"><ActivityNavIcon name="invest" /><span>Invest</span></Link>
-        <Link aria-current="page" to="/activity"><ActivityNavIcon name="portfolio" /><span>Portfolio</span></Link>
+        <Link to="/portfolio"><ActivityNavIcon name="portfolio" /><span>Portfolio</span></Link>
         <Link to="/more"><ActivityNavIcon name="more" /><span>More</span></Link>
       </nav>
     </div>

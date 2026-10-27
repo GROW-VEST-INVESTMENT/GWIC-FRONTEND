@@ -6,7 +6,7 @@ const navigation = [
   { label: 'Home', icon: 'home', target: 'dashboard-top' },
   { label: 'Core Lock', icon: 'lock', path: '/core-lock' },
   { label: 'Invest', icon: 'invest', target: 'account-balances' },
-  { label: 'Portfolio', icon: 'portfolio', path: '/activity' },
+  { label: 'Portfolio', icon: 'portfolio', path: '/portfolio' },
 ];
 
 const quickActions = [

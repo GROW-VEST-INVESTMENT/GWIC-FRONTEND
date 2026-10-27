@@ -333,7 +333,7 @@ function CreateGoal() {
         <Link to="/dashboard"><GoalIcon name="home" /><span>Home</span></Link>
         <Link to="/core-lock"><GoalIcon name="lock" /><span>Core Lock</span></Link>
         <Link to="/dashboard#account-balances"><GoalIcon name="invest" /><span>Invest</span></Link>
-        <Link to="/activity"><GoalIcon name="calendar" /><span>Portfolio</span></Link>
+        <Link to="/portfolio"><GoalIcon name="calendar" /><span>Portfolio</span></Link>
         <Link to="/more"><GoalIcon name="more" /><span>More</span></Link>
       </nav>
     </main>
