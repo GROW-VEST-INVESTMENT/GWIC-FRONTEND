@@ -8,6 +8,7 @@ import CreateGoal from './pages/CreateGoal/CreateGoal';
 import SavingsGoals from './pages/SavingsGoals/SavingsGoals';
 import More from './pages/More/More';
 import Portfolio from './pages/Portfolio/Portfolio';
+import PortfolioAllocation from './pages/Portfolio/PortfolioAllocation';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/create-goal" element={<CreateGoal />} />
         <Route path="/goals" element={<SavingsGoals />} />
         <Route path="/activity" element={<Activity />} />
+        <Route path="/portfolio/allocation" element={<PortfolioAllocation />} />
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/more" element={<More />} />
         <Route path="*" element={<Navigate to="/" replace />} />
