@@ -46,7 +46,11 @@
 .dashboard-brand-mark {
   width: 48px;
   height: 48px;
-  color: #28bd38;
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+  background: transparent;
+  box-shadow: none;
 }
 
 .dashboard-brand strong,

@@ -40,12 +40,13 @@ function Icon({ name, className = '' }) {
 
 function BrandMark() {
   return (
-    <svg aria-hidden="true" className="core-lock-brand-mark" viewBox="0 0 56 56">
-      <circle cx="28" cy="28" r="27" fill="currentColor" />
-      <path d="M12 41V29l8-7 6 6 12-14 6 5-17 20-7-6-3 3v5h-5Z" fill="#075334" />
-      <path d="M17 42h5V33l-5 5v4Zm9 0h5V28l-5 6v8Zm9 0h5V21l-5 6v15Z" fill="#075334" />
-      <path d="m34 14 6-6 6 6" fill="none" stroke="#075334" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <img
+      src="/gwic-logo.png"
+      alt="GWIC logo"
+      className="core-lock-brand-mark"
+      loading="eager"
+      decoding="async"
+    />
   );
 }
 
