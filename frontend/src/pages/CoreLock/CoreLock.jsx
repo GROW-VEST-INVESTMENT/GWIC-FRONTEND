@@ -41,7 +41,7 @@ function Icon({ name, className = '' }) {
 function BrandMark() {
   return (
     <img
-      src="/gwic-logo.png"
+      src="/gwic-logo-v2.png"
       alt="GWIC logo"
       className="core-lock-brand-mark"
       loading="eager"

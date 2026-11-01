@@ -138,7 +138,7 @@ function Activity() {
       <header className="dashboard-header">
         <Link className="dashboard-brand" to="/dashboard" aria-label="Back to dashboard">
           <img
-            src="/gwic-logo.png"
+            src="/gwic-logo-v2.png"
             alt="GWIC logo"
             className="dashboard-brand-mark"
             loading="eager"
