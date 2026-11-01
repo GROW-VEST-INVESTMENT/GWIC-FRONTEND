@@ -152,6 +152,13 @@
   font-weight: 800;
 }
 
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
 .profile-name {
   padding: 8px 0;
 }

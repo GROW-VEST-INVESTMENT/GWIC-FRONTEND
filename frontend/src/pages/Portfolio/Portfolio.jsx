@@ -9,7 +9,7 @@ const holdingFilters = ['All', 'Stocks', 'Core Target', 'Core Lock', 'Savings'];
 const bottomNavigation = [
   { label: 'Home', icon: 'home', to: '/dashboard' },
   { label: 'Core Lock', icon: 'lock', to: '/core-lock' },
-  { label: 'Invest', icon: 'invest', to: '/dashboard#account-balances' },
+  { label: 'Invest', icon: 'invest', to: '/invest' },
   { label: 'Portfolio', icon: 'portfolio', to: '/portfolio' },
   { label: 'More', icon: 'more', to: '/more' },
 ];

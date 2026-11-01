@@ -9,6 +9,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), tailwindcss()],
     server: {
+      watch: {
+        ignored: ['**/dist/**'],
+      },
       proxy: {
         '/api': {
           target: apiTarget,

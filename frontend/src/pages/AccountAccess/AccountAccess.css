@@ -142,9 +142,94 @@
   color: #fff;
 }
 
+.access-steps li.is-complete {
+  color: #075b38;
+}
+
+.access-steps li.is-complete span {
+  background: #e1f2e5;
+  color: #075b38;
+}
+
+.signup-step-intro {
+  margin: -11px 0 18px;
+  color: #586d63;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
 .access-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+}
+
+.signup-review {
+  margin: 3px 0 8px;
+  padding: 16px;
+  border: 1px solid #dce6df;
+  border-radius: 6px;
+  background: #f8fbf8;
+}
+
+.signup-review h2 {
+  color: #17392a;
+  font-size: 0.95rem;
+}
+
+.signup-review dl {
+  margin: 10px 0 0;
+}
+
+.signup-review dl > div {
+  display: grid;
+  grid-template-columns: minmax(78px, 0.35fr) minmax(0, 1fr);
+  gap: 10px;
+  padding: 7px 0;
+  border-top: 1px solid #e7eee8;
+  font-size: 0.8rem;
+}
+
+.signup-review dt {
+  color: #63766b;
+}
+
+.signup-review dd {
+  margin: 0;
+  color: #17392a;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.signup-edit-link,
+.signup-back {
+  margin: 10px 12px 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #087544;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.signup-navigation {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.signup-navigation .access-submit {
+  flex: 1;
+}
+
+.signup-back {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 10px 4px;
+  text-decoration: none;
 }
 
 .field-label {
@@ -179,6 +264,13 @@
 .access-input:focus {
   border-color: #16824d;
   box-shadow: 0 0 0 3px rgba(22, 130, 77, 0.12);
+}
+
+.access-help-text {
+  margin-top: 7px;
+  color: #65776d;
+  font-size: 0.76rem;
+  line-height: 1.45;
 }
 
 .password-label-row {

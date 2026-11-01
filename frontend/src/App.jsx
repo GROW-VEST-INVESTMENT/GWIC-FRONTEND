@@ -9,6 +9,8 @@ import SavingsGoals from './pages/SavingsGoals/SavingsGoals';
 import More from './pages/More/More';
 import Portfolio from './pages/Portfolio/Portfolio';
 import PortfolioAllocation from './pages/Portfolio/PortfolioAllocation';
+import Invest from './pages/Invest/Invest';
+import InvestStockDetails from './pages/Invest/InvestStockDetails';
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
         <Route path="/forgot-password" element={<AccountAccess />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/core-lock" element={<CoreLock />} />
+        <Route path="/invest/:ticker" element={<InvestStockDetails />} />
+        <Route path="/invest" element={<Invest />} />
         <Route path="/create-goal" element={<CreateGoal />} />
         <Route path="/goals" element={<SavingsGoals />} />
         <Route path="/activity" element={<Activity />} />

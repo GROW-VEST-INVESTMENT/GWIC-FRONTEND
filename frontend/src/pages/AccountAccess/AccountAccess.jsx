@@ -38,9 +38,15 @@ function AccountAccess() {
   const [searchParams] = useSearchParams();
   const isLogin = location.pathname === '/login';
   const requestedProduct = searchParams.get('product');
-  const [selectedProduct, setSelectedProduct] = useState(
-    productOptions.some((option) => option.value === requestedProduct) ? requestedProduct : 'undecided',
-  );
+  const [signupStep, setSignupStep] = useState(0);
+  const [signupForm, setSignupForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    goal: '',
+    product: productOptions.some((option) => option.value === requestedProduct) ? requestedProduct : 'undecided',
+    password: '',
+  });
   const [notice, setNotice] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -54,16 +60,26 @@ function AccountAccess() {
     event.preventDefault();
     setNotice(null);
 
+    if (!event.currentTarget.reportValidity()) return;
+
+    if (!isLogin && signupStep < 2) {
+      setSignupStep((step) => step + 1);
+      return;
+    }
+
     setIsSubmitting(true);
     const form = event.currentTarget;
     const formData = new FormData(form);
+    const requestData = isLogin
+      ? Object.fromEntries(formData.entries())
+      : signupForm;
 
     try {
       const response = await fetch(`/api/auth/${isLogin ? 'login' : 'register'}`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.fromEntries(formData.entries())),
+        body: JSON.stringify(requestData),
       });
       const result = await response.json();
 
@@ -72,6 +88,7 @@ function AccountAccess() {
           type: 'error',
           message: result.message || `We could not ${isLogin ? 'log you in' : 'create your account'}. Please try again.`,
           duplicateEmail: !isLogin && response.status === 409,
+          accountEmail: signupForm.email,
         });
         return;
       }
@@ -80,7 +97,7 @@ function AccountAccess() {
         navigate('/login', {
           state: {
             accountCreated: true,
-            registeredEmail: formData.get('email'),
+            registeredEmail: signupForm.email,
           },
         });
         return;
@@ -145,42 +162,63 @@ function AccountAccess() {
               </Link>
             </div>
           ) : !isLogin && (
-            <ol className="access-steps" aria-label="Signup steps">
-              <li className="is-current"><span>01</span>Profile</li>
-              <li><span>02</span>Choose</li>
-              <li><span>03</span>Review</li>
+            <ol aria-label={`Signup step ${signupStep + 1} of 3`} className="access-steps">
+              {['Profile', 'Choose', 'Review'].map((step, index) => (
+                <li className={index === signupStep ? 'is-current' : index < signupStep ? 'is-complete' : ''} key={step}>
+                  <span>{index < signupStep ? '✓' : `0${index + 1}`}</span>{step}
+                </li>
+              ))}
             </ol>
           )}
+            {!isLogin && !isForgotPassword && (
+              <p aria-live="polite" className="signup-step-intro">
+                {[
+                  'Start with your legal name and contact details.',
+                  'Choose a goal and what you would like to explore.',
+                  'Check your details, then set a password.',
+                ][signupStep]}
+              </p>
+            )}
 
-          {!isForgotPassword && <form className="access-form" onSubmit={handleSubmit}>
-            {!isLogin && (
+            {!isForgotPassword && <form className="access-form" noValidate onSubmit={handleSubmit}>
+            {(!isLogin && signupStep === 0) && (
               <>
                 <label className="field-label" htmlFor="full-name">Full name</label>
-                <input className="access-input" autoComplete="name" id="full-name" name="name" placeholder="Your name" required />
+                <input className="access-input" autoComplete="name" id="full-name" maxLength="100" minLength="2" name="name" onChange={(event) => setSignupForm((current) => ({ ...current, name: event.target.value }))} placeholder="Your full legal name" required value={signupForm.name} />
+                <small className="access-help-text">Enter your full legal name exactly as it appears on your bank account and NIN records. Your account name can’t be edited later, and bank withdrawals require the bank name to match.</small>
               </>
             )}
 
-            <label className="field-label" htmlFor="email">Email address</label>
-            <input
-              className="access-input"
-              autoComplete="email"
-              defaultValue={isLogin ? email : undefined}
-              id="email"
-              key={`${location.key}-email`}
-              name="email"
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@example.com"
-              required
-              type="email"
-            />
+            {(isLogin || (!isLogin && signupStep === 0)) && <>
+              <label className="field-label" htmlFor="email">Email address</label>
+              <input
+                className="access-input"
+                autoComplete={isLogin ? 'username' : 'email'}
+                defaultValue={isLogin ? email : undefined}
+                id="email"
+                key={`${location.key}-email`}
+                name="email"
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  if (!isLogin) setSignupForm((current) => ({ ...current, email: event.target.value }));
+                }}
+                placeholder="you@example.com"
+                required
+                type="email"
+              />
+            </>}
 
-            {!isLogin && (
+            {!isLogin && signupStep === 0 && (
               <>
                 <label className="field-label" htmlFor="phone">Phone number <span>(optional)</span></label>
-                <input className="access-input" autoComplete="tel" id="phone" name="phone" placeholder="+234 800 000 0000" type="tel" />
+                <input className="access-input" autoComplete="tel" id="phone" maxLength="32" name="phone" onChange={(event) => setSignupForm((current) => ({ ...current, phone: event.target.value }))} placeholder="+234 800 000 0000" type="tel" value={signupForm.phone} />
+              </>
+            )}
 
+            {!isLogin && signupStep === 1 && (
+              <>
                 <label className="field-label" htmlFor="goal">What are you planning for?</label>
-                <select className="access-input" defaultValue="" id="goal" name="goal" required>
+                <select className="access-input" id="goal" name="goal" onChange={(event) => setSignupForm((current) => ({ ...current, goal: event.target.value }))} required value={signupForm.goal}>
                   <option disabled value="">Choose a goal</option>
                   {savingGoals.map((goal) => <option key={goal} value={goal}>{goal}</option>)}
                 </select>
@@ -189,11 +227,13 @@ function AccountAccess() {
                   <legend>What would you like to explore first?</legend>
                   <div className="product-options">
                     {productOptions.map((option) => (
-                      <label className={`product-choice ${selectedProduct === option.value ? 'is-selected' : ''}`} key={option.value}>
+                      <label className={`product-choice ${signupForm.product === option.value ? 'is-selected' : ''}`} key={option.value}>
                         <input
-                          checked={selectedProduct === option.value}
+                          checked={signupForm.product === option.value}
                           name="product"
-                          onChange={() => setSelectedProduct(option.value)}
+                          onChange={() => {
+                            setSignupForm((current) => ({ ...current, product: option.value }));
+                          }}
                           type="radio"
                           value={option.value}
                         />
@@ -208,7 +248,22 @@ function AccountAccess() {
               </>
             )}
 
-            <div className="password-label-row">
+            {!isLogin && signupStep === 2 && (
+              <section aria-label="Review your account choices" className="signup-review">
+                <h2>Review your details</h2>
+                <dl>
+                  <div><dt>Full name</dt><dd>{signupForm.name}</dd></div>
+                  <div><dt>Email</dt><dd>{signupForm.email}</dd></div>
+                  <div><dt>Goal</dt><dd>{signupForm.goal}</dd></div>
+                  <div><dt>Explore</dt><dd>{productOptions.find((option) => option.value === signupForm.product)?.title}</dd></div>
+                </dl>
+                <button className="signup-edit-link" onClick={() => setSignupStep(0)} type="button">Edit profile</button>
+                <button className="signup-edit-link" onClick={() => setSignupStep(1)} type="button">Edit choices</button>
+              </section>
+            )}
+
+            {(isLogin || signupStep === 2) && <>
+              <div className="password-label-row">
               <label className="field-label" htmlFor="password">Password</label>
               {isLogin && (
                 <Link
@@ -219,41 +274,53 @@ function AccountAccess() {
                   Forgot password?
                 </Link>
               )}
-            </div>
-            <div className="password-input-wrap">
-              <input
-                className="access-input"
-                autoComplete={isLogin ? 'current-password' : 'new-password'}
-                autoFocus={isLogin && Boolean(location.state?.accountCreated)}
-                id="password"
-                minLength={PASSWORD_MIN_LENGTH}
-                name="password"
-                placeholder={isLogin ? 'Enter your password' : `At least ${PASSWORD_MIN_LENGTH} characters`}
-                required
-                type={showPassword ? 'text' : 'password'}
-                aria-describedby={!isLogin ? 'password-requirement' : undefined}
-              />
-              <button
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                aria-pressed={showPassword}
-                className="password-visibility"
-                onClick={() => setShowPassword((visible) => !visible)}
-                type="button"
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </button>
-            </div>
-            {!isLogin && (
-              <p className="password-requirement" id="password-requirement">
-                Use at least {PASSWORD_MIN_LENGTH} characters.
-              </p>
-            )}
+              </div>
+              <div className="password-input-wrap">
+                <input
+                  className="access-input"
+                  autoComplete={isLogin ? 'current-password' : 'new-password'}
+                  autoFocus={isLogin && Boolean(location.state?.accountCreated)}
+                  id="password"
+                  minLength={PASSWORD_MIN_LENGTH}
+                  name="password"
+                  onChange={(event) => {
+                    if (!isLogin) setSignupForm((current) => ({ ...current, password: event.target.value }));
+                  }}
+                  placeholder={isLogin ? 'Enter your password' : `At least ${PASSWORD_MIN_LENGTH} characters`}
+                  required
+                  type={showPassword ? 'text' : 'password'}
+                  aria-describedby={!isLogin ? 'password-requirement' : undefined}
+                  value={isLogin ? undefined : signupForm.password}
+                />
+                <button
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
+                  className="password-visibility"
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  type="button"
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              {!isLogin && (
+                <p className="password-requirement" id="password-requirement">
+                  Use at least {PASSWORD_MIN_LENGTH} characters.
+                </p>
+              )}
+            </>}
 
-            <button aria-busy={isSubmitting} className="access-submit" disabled={isSubmitting} type="submit">
-              {isSubmitting && <span aria-hidden="true" className="access-spinner" />}
-              <span>{isSubmitting ? (isLogin ? 'Logging in…' : 'Creating account…') : isLogin ? 'Log In' : 'Create account'}</span>
-              {!isSubmitting && <span aria-hidden="true">→</span>}
-            </button>
+            {isLogin || signupStep === 2 ? (
+              <button aria-busy={isSubmitting} className="access-submit" disabled={isSubmitting} type="submit">
+                {isSubmitting && <span aria-hidden="true" className="access-spinner" />}
+                <span>{isSubmitting ? (isLogin ? 'Logging in…' : 'Creating account…') : isLogin ? 'Log In' : 'Create account'}</span>
+                {!isSubmitting && <span aria-hidden="true">→</span>}
+              </button>
+            ) : (
+              <div className="signup-navigation">
+                {signupStep > 0 && <button className="signup-back" onClick={() => setSignupStep((step) => step - 1)} type="button">Back</button>}
+                <button className="access-submit" type="submit">Continue <span aria-hidden="true">→</span></button>
+              </div>
+            )}
 
             {(registrationNotice || notice) && (
               <p className={`form-status is-${notice?.type || 'success'}`} role={notice?.type === 'error' ? 'alert' : 'status'}>
@@ -264,7 +331,7 @@ function AccountAccess() {
                     <Link
                       className="status-action"
                       to="/login"
-                      state={{ registeredEmail: email.trim() }}
+                      state={{ registeredEmail: notice.accountEmail?.trim() || email.trim() }}
                     >
                       Go to login
                     </Link>

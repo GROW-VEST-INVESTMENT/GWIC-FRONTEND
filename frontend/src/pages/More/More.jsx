@@ -4,13 +4,13 @@ import BrandMark from '../../components/BrandMark';
 import './More.css';
 
 const settings = [
-  { id: 'personal', icon: 'person', title: 'Personal Information', description: 'View your name, email address and phone number.' },
-  { id: 'kyc', icon: 'shield', title: 'KYC & Verification', description: 'Review your identity verification status.' },
-  { id: 'banks', icon: 'bank', title: 'Linked Bank Accounts', description: 'Manage your payout and funding accounts.' },
-  { id: 'security', icon: 'lock', title: 'Security', description: 'Account password and sign-in security.' },
-  { id: 'notifications', icon: 'bell', title: 'Notifications', description: 'Manage your alerts and account updates.' },
-  { id: 'preferences', icon: 'settings', title: 'Preferences', description: 'Balance visibility and display settings.' },
-  { id: 'help', icon: 'headset', title: 'Help & Support', description: 'Get help with your account and products.' },
+  { id: 'personal', icon: 'person', title: 'Personal Information', description: 'Update your name and phone number.' },
+  { id: 'kyc', icon: 'shield', title: 'KYC & Verification', description: 'Submit and track an account verification request.' },
+  { id: 'banks', icon: 'bank', title: 'Linked Bank Accounts', description: 'Manage verified accounts for wallet withdrawals.' },
+  { id: 'security', icon: 'lock', title: 'Security', description: 'Change your password and protect your account.' },
+  { id: 'notifications', icon: 'bell', title: 'Notifications', description: 'Choose how you want to receive account updates.' },
+  { id: 'preferences', icon: 'settings', title: 'Preferences', description: 'Choose whether your wallet balance is visible.' },
+  { id: 'help', icon: 'headset', title: 'Help & Support', description: 'Send a support request and track its status.' },
   { id: 'about', icon: 'info', title: 'About GWIC', description: 'Learn more about Grow With Core.' },
   { id: 'logout', icon: 'logout', title: 'Log Out', description: 'Securely sign out of your account.' },
 ];
@@ -20,7 +20,6 @@ function MoreIcon({ name, className = '' }) {
     arrowLeft: <path d="m15 18-6-6 6-6M9 12h12" />,
     eye: <><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" /></>,
     eyeOff: <><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8" /><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a15.8 15.8 0 0 1-3.1 3.8M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7a10 10 0 0 0 4-.8" /></>,
-    camera: <><path d="M14 5h-4L8.5 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.5L14 5Z" /><circle cx="12" cy="13" r="3" /></>,
     person: <><circle cx="12" cy="8" r="3.5" /><path d="M4.5 20c.5-4 3-6 7.5-6s7 2 7.5 6" /></>,
     shield: <><path d="M12 3 20 6v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-3Z" /><path d="m8.5 12 2.2 2.2 4.8-5" /></>,
     bank: <><path d="m3 9 9-5 9 5H3Zm2 2v7m5-7v7m4-7v7m5-7v7M3 21h18" /></>,
@@ -46,48 +45,87 @@ function MoreIcon({ name, className = '' }) {
   );
 }
 
+async function accountRequest(path, { method = 'GET', body, signal } = {}) {
+  const isFormData = body instanceof FormData;
+  const response = await fetch(path, {
+    method,
+    credentials: 'include',
+    headers: {
+      Accept: 'application/json',
+      ...(body && !isFormData ? { 'Content-Type': 'application/json' } : {}),
+    },
+    ...(body ? { body: isFormData ? body : JSON.stringify(body) } : {}),
+    ...(signal ? { signal } : {}),
+  });
+  const result = response.status === 204 ? {} : await response.json();
+  if (!response.ok) {
+    const error = new Error(result.message || 'We could not complete this account request.');
+    error.status = response.status;
+    throw error;
+  }
+  return result;
+}
+
 function More() {
   const navigate = useNavigate();
   const dialogRef = useRef(null);
   const dialogTriggerRef = useRef(null);
+  const photoFileInputRef = useRef(null);
   const [account, setAccount] = useState(null);
   const [walletBalance, setWalletBalance] = useState(null);
+  const [profileForm, setProfileForm] = useState({ phone: '' });
+  const [preferences, setPreferences] = useState({ hideWalletBalance: false, theme: 'system', language: 'en' });
+  const [notifications, setNotifications] = useState({
+    emailAccountUpdates: true,
+    emailSecurityAlerts: true,
+    pushNotifications: false,
+  });
+  const [notificationDelivery, setNotificationDelivery] = useState({ email: false, push: false });
+  const [verification, setVerification] = useState(null);
+  const [linkedBanks, setLinkedBanks] = useState([]);
+  const [bankDirectory, setBankDirectory] = useState([]);
+  const [supportRequests, setSupportRequests] = useState([]);
+  const [about, setAbout] = useState(null);
   const [activePanel, setActivePanel] = useState('');
   const [isLoadingAccount, setIsLoadingAccount] = useState(true);
-  const [balancePreference, setBalancePreference] = useState(() => {
-    try {
-      return {
-        hideBalance: window.localStorage.getItem('gwic.hideWalletBalance') === 'true',
-        message: '',
-      };
-    } catch {
-      return {
-        hideBalance: false,
-        message: 'This browser could not restore your balance privacy preference.',
-      };
-    }
-  });
-  const [privacyNotice, setPrivacyNotice] = useState('');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [accountError, setAccountError] = useState('');
   const [actionError, setActionError] = useState('');
+  const [actionMessage, setActionMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [photoLoadFailed, setPhotoLoadFailed] = useState(false);
+  const [bankLoading, setBankLoading] = useState(false);
+  const [bankPassword, setBankPassword] = useState('');
+  const [bankForm, setBankForm] = useState({ accountNumber: '', bankCode: '', search: '' });
+  const [securityForm, setSecurityForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [verificationForm, setVerificationForm] = useState({ legalName: '', dateOfBirth: '', consent: false });
+  const [supportForm, setSupportForm] = useState({ category: 'account', subject: '', message: '' });
   const [retryKey, setRetryKey] = useState(0);
-  const hideBalance = balancePreference.hideBalance;
+  const hideBalance = preferences.hideWalletBalance;
 
-  function updateBalancePrivacy(hide) {
+  function showActionError(error) {
+    if (error.status === 401) {
+      navigate('/login', { replace: true });
+      return;
+    }
+    setActionError(error.message);
+  }
+
+  async function savePreference(key, value) {
+    setIsSaving(true);
+    setActionError('');
+    setActionMessage('');
     try {
-      window.localStorage.setItem('gwic.hideWalletBalance', String(hide));
-      setBalancePreference({
-        hideBalance: hide,
-        message: 'Preference saved on this device.',
+      const result = await accountRequest('/api/account/preferences', {
+        method: 'PATCH',
+        body: { [key]: value },
       });
-      setPrivacyNotice('');
-    } catch {
-      setBalancePreference({
-        hideBalance: hide,
-        message: 'This browser could not save the preference. It applies for this visit only.',
-      });
-      setPrivacyNotice('Balance privacy could not be saved on this device. It applies for this visit only.');
+      setPreferences(result.preferences);
+      setActionMessage(result.message);
+    } catch (requestError) {
+      showActionError(requestError);
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -132,22 +170,29 @@ function More() {
       setIsLoadingAccount(true);
       setAccountError('');
       try {
-        const [accountResponse, walletResponse] = await Promise.all([
-          fetch('/api/dashboard', { credentials: 'include', headers: { Accept: 'application/json' }, signal: controller.signal }),
-          fetch('/api/wallet', { credentials: 'include', headers: { Accept: 'application/json' }, signal: controller.signal }),
+        const results = await Promise.all([
+          accountRequest('/api/account/profile', { signal: controller.signal }),
+          accountRequest('/api/wallet', { signal: controller.signal }),
+          accountRequest('/api/account/preferences', { signal: controller.signal }),
+          accountRequest('/api/account/notifications', { signal: controller.signal }),
+          accountRequest('/api/account/verification', { signal: controller.signal }),
+          accountRequest('/api/account/banks', { signal: controller.signal }),
         ]);
-        if (accountResponse.status === 401 || walletResponse.status === 401) {
-          navigate('/login', { replace: true });
-          return;
-        }
-        const [accountData, walletData] = await Promise.all([accountResponse.json(), walletResponse.json()]);
-        if (!accountResponse.ok || !walletResponse.ok) {
-          throw new Error(accountData.message || walletData.message || 'We could not load your account details.');
-        }
-        setAccount(accountData.user);
+        const [profileData, walletData, preferenceData, notificationData, verificationData, bankData] = results;
+        setAccount(profileData.profile);
+        setProfileForm({ phone: profileData.profile.phone || '' });
         setWalletBalance(walletData.balance);
+        setPreferences(preferenceData.preferences);
+        setNotifications(notificationData.preferences);
+        setNotificationDelivery(notificationData.delivery);
+        setVerification(verificationData);
+        setLinkedBanks(bankData.banks);
       } catch (requestError) {
         if (requestError.name !== 'AbortError') {
+          if (requestError.status === 401) {
+            navigate('/login', { replace: true });
+            return;
+          }
           setAccountError(requestError instanceof TypeError
             ? 'We could not reach GWIC. Check your connection and try again.'
             : requestError.message);
@@ -160,6 +205,54 @@ function More() {
     loadAccount();
     return () => controller.abort();
   }, [navigate, retryKey]);
+
+  useEffect(() => {
+    if (!activePanel) return undefined;
+    const controller = new AbortController();
+    async function loadPanelData() {
+      setActionError('');
+      setActionMessage('');
+      try {
+        if (activePanel === 'banks') {
+          setBankLoading(true);
+          const [directory, linked] = await Promise.allSettled([
+            accountRequest('/api/wallet/banks', { signal: controller.signal }),
+            accountRequest('/api/account/banks', { signal: controller.signal }),
+          ]);
+          if (linked.status === 'rejected') throw linked.reason;
+          setLinkedBanks(linked.value.banks);
+          if (directory.status === 'rejected') {
+            if (directory.reason.status === 401) {
+              navigate('/login', { replace: true });
+              return;
+            }
+            setBankDirectory([]);
+            setActionError('Bank options are unavailable. You can still manage saved accounts; try again later to link another bank.');
+          } else {
+            setBankDirectory(directory.value.banks);
+          }
+        } else if (activePanel === 'help') {
+          const result = await accountRequest('/api/account/support', { signal: controller.signal });
+          setSupportRequests(result.requests);
+        } else if (activePanel === 'about') {
+          const result = await accountRequest('/api/account/about', { signal: controller.signal });
+          setAbout(result);
+        }
+      } catch (requestError) {
+        if (requestError.name !== 'AbortError') {
+          if (requestError.status === 401) {
+            navigate('/login', { replace: true });
+            return;
+          }
+          setActionError(requestError.message);
+        }
+      } finally {
+        if (!controller.signal.aborted) setBankLoading(false);
+      }
+    }
+    loadPanelData();
+    return () => controller.abort();
+  }, [activePanel, navigate]);
 
   async function handleLogout() {
     setIsLoggingOut(true);
@@ -183,6 +276,215 @@ function More() {
     setRetryKey((key) => key + 1);
   }
 
+  async function saveProfile(event) {
+    event.preventDefault();
+    setIsSaving(true);
+    setActionError('');
+    setActionMessage('');
+    try {
+      const result = await accountRequest('/api/account/profile', {
+        method: 'PATCH',
+        body: { phone: profileForm.phone },
+      });
+      setAccount(result.profile);
+      setProfileForm({ phone: result.profile.phone || '' });
+      setActionMessage(result.message);
+    } catch (requestError) {
+      showActionError(requestError);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function uploadProfilePhoto(event) {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+      setActionError('Choose a PNG, JPEG, or WebP photo under 2 MB.');
+      input.value = '';
+      return;
+    }
+
+    setIsSaving(true);
+    setActionError('');
+    setActionMessage('');
+    try {
+      const body = new FormData();
+      body.append('photo', file);
+      const result = await accountRequest('/api/account/profile/photo', { method: 'POST', body });
+      setAccount((current) => ({ ...current, photoUrl: result.photoUrl }));
+      setPhotoLoadFailed(false);
+      setActionMessage(result.message);
+    } catch (requestError) {
+      showActionError(requestError);
+    } finally {
+      setIsSaving(false);
+      input.value = '';
+    }
+  }
+
+  async function removeProfilePhoto() {
+    if (!window.confirm('Remove your profile photo?')) return;
+    setIsSaving(true);
+    setActionError('');
+    setActionMessage('');
+    try {
+      const result = await accountRequest('/api/account/profile/photo', { method: 'DELETE' });
+      setAccount((current) => ({ ...current, photoUrl: null }));
+      setPhotoLoadFailed(false);
+      setActionMessage(result.message);
+    } catch (requestError) {
+      showActionError(requestError);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  function requestNameCorrection() {
+    setSupportForm({
+      category: 'account',
+      subject: 'Request account name correction',
+      message: 'I need to request a correction to the name on my account. Please let me know how to verify the correct legal name.',
+    });
+    setActivePanel('help');
+  }
+
+  async function submitVerification(event) {
+    event.preventDefault();
+    setIsSaving(true);
+    setActionError('');
+    setActionMessage('');
+    try {
+      const result = await accountRequest('/api/account/verification', {
+        method: 'POST',
+        body: verificationForm,
+      });
+      setVerification((current) => ({
+        ...current,
+        status: result.status,
+        canSubmit: false,
+        request: { id: result.requestId, status: result.status, legalName: verificationForm.legalName },
+      }));
+      setActionMessage(result.message);
+    } catch (requestError) {
+      showActionError(requestError);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function linkBankAccount(event) {
+    event.preventDefault();
+    setIsSaving(true);
+    setActionError('');
+    setActionMessage('');
+    try {
+      const result = await accountRequest('/api/account/banks', {
+        method: 'POST',
+        body: {
+          accountNumber: bankForm.accountNumber,
+          bankCode: bankForm.bankCode,
+          password: bankPassword,
+        },
+      });
+      setLinkedBanks((current) => [...current, result.bank].sort((first, second) => Number(second.isDefault) - Number(first.isDefault)));
+      setBankForm({ accountNumber: '', bankCode: '', search: '' });
+      setBankPassword('');
+      setActionMessage(result.message);
+    } catch (requestError) {
+      showActionError(requestError);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function updateLinkedBank(bankId, action) {
+    setIsSaving(true);
+    setActionError('');
+    setActionMessage('');
+    try {
+      const result = action === 'default'
+        ? await accountRequest(`/api/account/banks/${bankId}/default`, { method: 'PATCH', body: {} })
+        : await accountRequest(`/api/account/banks/${bankId}`, { method: 'DELETE' });
+      const response = await accountRequest('/api/account/banks');
+      setLinkedBanks(response.banks);
+      setActionMessage(result.message);
+    } catch (requestError) {
+      showActionError(requestError);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function updateNotification(key, value) {
+    const previousValue = notifications[key];
+    setIsSaving(true);
+    setNotifications((current) => ({ ...current, [key]: value }));
+    setActionError('');
+    setActionMessage('');
+    try {
+      const result = await accountRequest('/api/account/notifications', {
+        method: 'PATCH',
+        body: { [key]: value },
+      });
+      setNotifications(result.preferences);
+      setNotificationDelivery(result.delivery);
+      setActionMessage(result.message);
+    } catch (requestError) {
+      setNotifications((current) => ({ ...current, [key]: previousValue }));
+      showActionError(requestError);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function changePassword(event) {
+    event.preventDefault();
+    if (securityForm.newPassword !== securityForm.confirmPassword) {
+      setActionError('The new password and confirmation do not match.');
+      return;
+    }
+    setIsSaving(true);
+    setActionError('');
+    setActionMessage('');
+    try {
+      const result = await accountRequest('/api/account/password', {
+        method: 'PATCH',
+        body: {
+          currentPassword: securityForm.currentPassword,
+          newPassword: securityForm.newPassword,
+        },
+      });
+      setActionMessage(result.message);
+      navigate('/login', { replace: true, state: { passwordChanged: true } });
+    } catch (requestError) {
+      showActionError(requestError);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function createSupportRequest(event) {
+    event.preventDefault();
+    setIsSaving(true);
+    setActionError('');
+    setActionMessage('');
+    try {
+      const result = await accountRequest('/api/account/support', {
+        method: 'POST',
+        body: supportForm,
+      });
+      setSupportRequests((current) => [result.request, ...current]);
+      setSupportForm({ category: 'account', subject: '', message: '' });
+      setActionMessage(`Request ${result.request.reference} was received.`);
+    } catch (requestError) {
+      showActionError(requestError);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   const money = walletBalance === null
     ? isLoadingAccount ? 'Loading…' : 'Unavailable'
     : hideBalance
@@ -201,7 +503,7 @@ function More() {
           <nav aria-label="Account navigation" className="more-desktop-nav">
             <Link to="/dashboard"><MoreIcon name="home" />Home</Link>
             <Link to="/core-lock"><MoreIcon name="core" />Core Lock</Link>
-            <Link to="/dashboard#account-balances"><MoreIcon name="invest" />Invest</Link>
+            <Link to="/invest"><MoreIcon name="invest" />Invest</Link>
             <Link to="/portfolio"><MoreIcon name="portfolio" />Portfolio</Link>
             <Link aria-current="page" className="is-active" to="/more"><MoreIcon name="more" />More</Link>
           </nav>
@@ -209,13 +511,12 @@ function More() {
             <MoreIcon name="bell" />
           </button>
           <button aria-label="Your profile" className="more-header-avatar" onClick={(event) => { dialogTriggerRef.current = event.currentTarget; setActivePanel('personal'); }} type="button">
-            <MoreIcon name="person" />
+            {account?.photoUrl && !photoLoadFailed ? <img alt="" className="more-header-profile-photo" onError={() => setPhotoLoadFailed(true)} src={account.photoUrl} /> : <MoreIcon name="person" />}
           </button>
         </div>
         <button className="more-profile-summary" onClick={(event) => { dialogTriggerRef.current = event.currentTarget; setActivePanel('personal'); }} type="button">
           <span className="more-profile-avatar">
-            <MoreIcon name="person" />
-            <span aria-hidden="true" className="more-profile-camera"><MoreIcon name="camera" /></span>
+            {account?.photoUrl && !photoLoadFailed ? <img alt="" className="more-profile-photo" onError={() => setPhotoLoadFailed(true)} src={account.photoUrl} /> : <MoreIcon name="person" />}
           </span>
           <span className="more-profile-copy">
             <strong>{account?.name || (isLoadingAccount ? 'Loading your account…' : 'Your account')}</strong>
@@ -240,7 +541,8 @@ function More() {
               <button
                 aria-label={hideBalance ? 'Show wallet balance' : 'Hide wallet balance'}
                 aria-pressed={hideBalance}
-                onClick={() => updateBalancePrivacy(!hideBalance)}
+                disabled={isSaving}
+                onClick={() => savePreference('hideWalletBalance', !hideBalance)}
                 type="button"
               >
                 <MoreIcon name={hideBalance ? 'eyeOff' : 'eye'} />
@@ -256,14 +558,14 @@ function More() {
           </div>
         </section>
 
-        {privacyNotice && <p className="more-privacy-notice" role="status">{privacyNotice}</p>}
-
         {accountError && !activePanel && (
           <div className="more-error" role="alert">
             <span>{accountError}</span>
             <button onClick={retryAccountLoad} type="button">Retry</button>
           </div>
         )}
+        {actionError && !activePanel && <p className="more-dialog-error" role="alert">{actionError}</p>}
+        {actionMessage && !activePanel && <p aria-live="polite" className="more-action-message">{actionMessage}</p>}
 
         <section aria-label="Account settings" className="more-settings-list">
           {settings.map((item) => (
@@ -309,14 +611,37 @@ function More() {
                   <h2 id="more-detail-title">Personal Information</h2>
                   {isLoadingAccount
                     ? <p aria-live="polite">Loading your account details…</p>
-                    : account
-                      ? <dl>
-                        <div><dt>Full name</dt><dd>{account.name}</dd></div>
-                        <div><dt>Email address</dt><dd>{account.email}</dd></div>
-                        <div><dt>Phone number</dt><dd>{account.phone || 'Not provided'}</dd></div>
-                      </dl>
-                      : <p role="alert">Your account details could not be loaded. Use Retry above to try again.</p>}
-                  <p className="more-detail-note">Need to update your details or profile photo? Editing is not available yet.</p>
+                    : account && <>
+                      <div className="more-profile-photo-controls">
+                        <label htmlFor="more-profile-photo">Profile photo</label>
+                        <input
+                          accept="image/jpeg,image/png,image/webp"
+                          className="more-file-input"
+                          disabled={isSaving || !account.photoUploadAvailable}
+                          id="more-profile-photo"
+                          onChange={uploadProfilePhoto}
+                          ref={photoFileInputRef}
+                          type="file"
+                        />
+                        <div>
+                          <button className="more-detail-action is-secondary" disabled={isSaving || !account.photoUploadAvailable} onClick={() => photoFileInputRef.current?.click()} type="button">
+                            {!account.photoUploadAvailable ? 'Photo uploads unavailable' : account.photoUrl ? 'Change photo' : 'Add photo'}
+                          </button>
+                          {account.photoUrl && <button className="more-detail-action is-secondary" disabled={isSaving || !account.photoUploadAvailable} onClick={removeProfilePhoto} type="button">Remove photo</button>}
+                        </div>
+                        <small className="more-form-note">{account.photoUploadAvailable ? 'PNG, JPEG, or WebP up to 2 MB. This is only a profile photo—not identity verification. Don’t upload an ID document.' : 'Profile photo storage is being configured and is not available yet.'}</small>
+                      </div>
+                      <form className="more-form" onSubmit={saveProfile}>
+                      <label>Full name<input autoComplete="name" readOnly value={account.name} /></label>
+                      <small className="more-form-note">Your account name is locked because it must match the name on your verified bank account. For a correction, contact support.</small>
+                      <label>Email address<input autoComplete="email" readOnly value={account.email} /></label>
+                      <small className="more-form-note">Email changes require a separate verification flow and cannot be changed here.</small>
+                      <label>Phone number<input autoComplete="tel" maxLength="32" onChange={(event) => setProfileForm((current) => ({ ...current, phone: event.target.value }))} type="tel" value={profileForm.phone} /></label>
+                      <button className="more-detail-action" disabled={isSaving} type="submit">{isSaving ? 'Saving…' : 'Save profile'}</button>
+                      <button className="more-detail-action is-secondary" onClick={requestNameCorrection} type="button">Request a name correction</button>
+                      </form>
+                    </>}
+                  {!isLoadingAccount && !account && <p role="alert">Your account details could not be loaded. Use Retry above to try again.</p>}
                 </>
               )}
               {activePanel === 'kyc' && (
@@ -324,39 +649,87 @@ function More() {
                   <h2 id="more-detail-title">KYC & Verification</h2>
                   {isLoadingAccount
                     ? <p aria-live="polite">Checking your verification status…</p>
-                    : account
-                      ? <div className={`more-status-card ${account.isKycVerified ? 'is-complete' : ''}`}>
-                        <MoreIcon name="shield" />
-                        <span><strong>{account.isKycVerified ? 'Verified account' : 'Verification not complete'}</strong>
-                          <small>{account.isKycVerified
-                            ? 'Your account verification is confirmed.'
-                            : 'Identity verification is not available yet. Core savings remains unavailable until verification is completed.'}</small>
-                        </span>
-                      </div>
-                      : <p role="alert">We could not load your verification status. Please retry from the More page.</p>}
+                    : !verification
+                      ? <p role="alert">Your verification status could not be loaded. Use Retry above to try again.</p>
+                    : <div className={`more-status-card ${verification.status === 'verified' ? 'is-complete' : ''}`}>
+                      <MoreIcon name="shield" />
+                      <span><strong>{verification.status === 'verified' ? 'Verified account' : verification.status === 'pending' ? 'Request under review' : verification.status === 'rejected' ? 'Request needs attention' : 'Verification not complete'}</strong>
+                        <small>{verification.status === 'verified'
+                          ? 'Your account verification is confirmed.'
+                          : verification.status === 'pending'
+                            ? 'Your request has been submitted and is awaiting manual review.'
+                            : verification.status === 'rejected'
+                              ? 'Your previous request was not approved. You can submit a new request for manual review.'
+                              : 'Submit a request for manual review. Sending this request does not verify your account.'}</small>
+                      </span>
+                    </div>}
+                  {verification?.notice && <p className="more-form-note">{verification.notice}</p>}
+                  {verification?.canSubmit && <form className="more-form" onSubmit={submitVerification}>
+                    <label>Legal name<input autoComplete="name" maxLength="100" minLength="2" onChange={(event) => setVerificationForm((current) => ({ ...current, legalName: event.target.value }))} required value={verificationForm.legalName} /></label>
+                    <label>Date of birth<input autoComplete="bday" max={new Date().toISOString().slice(0, 10)} onChange={(event) => setVerificationForm((current) => ({ ...current, dateOfBirth: event.target.value }))} required type="date" value={verificationForm.dateOfBirth} /></label>
+                    <label className="more-checkbox-label"><input checked={verificationForm.consent} onChange={(event) => setVerificationForm((current) => ({ ...current, consent: event.target.checked }))} required type="checkbox" /> I consent to this information being used for a manual account verification review.</label>
+                    <button className="more-detail-action" disabled={isSaving} type="submit">{isSaving ? 'Submitting…' : 'Submit for review'}</button>
+                  </form>}
                 </>
               )}
               {activePanel === 'banks' && (
                 <>
                   <h2 id="more-detail-title">Linked Bank Accounts</h2>
-                  <p>Bank details are verified securely when you request a wallet withdrawal. No bank account is currently saved.</p>
-                  <Link className="more-detail-action" to="/dashboard#wallet-actions" onClick={() => setActivePanel('')}>Manage wallet</Link>
+                  <p>Link a bank account to make future withdrawals faster. GWIC verifies the account holder with its payment provider and stores a masked account reference.</p>
+                  <p className="more-form-note">{linkedBanks.length} of 3 bank accounts linked. Each account must be verified against your GWIC profile name.</p>
+                  {bankLoading
+                    ? <p aria-live="polite">Loading your linked bank accounts…</p>
+                    : <div className="more-linked-banks">{linkedBanks.length
+                      ? linkedBanks.map((bank) => <article className="more-linked-bank" key={bank.id}>
+                        <span><strong>{bank.bankName}</strong><small>{bank.accountName} ···· {bank.accountLast4}{bank.isDefault ? ' · Default' : ''}</small></span>
+                        <span className="more-bank-actions">
+                          {!bank.isDefault && <button disabled={isSaving} onClick={() => updateLinkedBank(bank.id, 'default')} type="button">Make default</button>}
+                          <button disabled={isSaving} onClick={() => updateLinkedBank(bank.id, 'remove')} type="button">Remove</button>
+                        </span>
+                      </article>)
+                      : <p>No bank accounts are linked yet.</p>}</div>}
+                  {linkedBanks.length < 3 ? <form className="more-form" onSubmit={linkBankAccount}>
+                    <label>Find your bank<input autoComplete="off" onChange={(event) => setBankForm((current) => ({ ...current, search: event.target.value, bankCode: '' }))} placeholder="Search Nigerian banks" value={bankForm.search} /></label>
+                    <label>Bank<select onChange={(event) => {
+                      const selectedBank = bankDirectory.find((bank) => bank.code === event.target.value);
+                      setBankForm((current) => ({ ...current, bankCode: event.target.value, search: selectedBank?.name || current.search }));
+                    }} required value={bankForm.bankCode}>
+                      <option value="">Select a bank</option>
+                      {bankDirectory.filter((bank) => bank.name.toLowerCase().includes(bankForm.search.toLowerCase())).map((bank) => <option key={bank.code} value={bank.code}>{bank.name}</option>)}
+                    </select></label>
+                    <label>10-digit account number<input autoComplete="off" inputMode="numeric" maxLength="10" minLength="10" onChange={(event) => setBankForm((current) => ({ ...current, accountNumber: event.target.value.replace(/\D/g, '').slice(0, 10) }))} required value={bankForm.accountNumber} /></label>
+                    <label>Confirm with your password<input autoComplete="current-password" onChange={(event) => setBankPassword(event.target.value)} required type="password" value={bankPassword} /></label>
+                    <button className="more-detail-action" disabled={isSaving || bankLoading || !bankDirectory.length} type="submit">{isSaving ? 'Verifying…' : 'Verify and link account'}</button>
+                    {!bankDirectory.length && !bankLoading && <small className="more-form-note">Bank options are unavailable right now. Close and reopen this panel to retry.</small>}
+                  </form> : <p className="more-form-note">You’ve reached the 3-account limit. Remove a linked account before adding another.</p>}
                 </>
               )}
               {activePanel === 'security' && (
                 <>
                   <h2 id="more-detail-title">Security</h2>
-                  <p>Password changes, PINs, and biometric sign-in are not available yet. Keep your password private and sign out when using a shared device.</p>
-                  <button className="more-detail-action is-secondary" disabled={isLoggingOut} onClick={handleLogout} type="button">
-                    {isLoggingOut ? 'Signing out…' : 'Sign out securely'}
-                  </button>
+                  <p>Choose a new password you do not use elsewhere. You will be asked to sign in again after the change.</p>
+                  <form className="more-form" onSubmit={changePassword}>
+                    <label>Current password<input autoComplete="current-password" onChange={(event) => setSecurityForm((current) => ({ ...current, currentPassword: event.target.value }))} required type="password" value={securityForm.currentPassword} /></label>
+                    <label>New password<input autoComplete="new-password" minLength="8" onChange={(event) => setSecurityForm((current) => ({ ...current, newPassword: event.target.value }))} required type="password" value={securityForm.newPassword} /></label>
+                    <label>Confirm new password<input autoComplete="new-password" minLength="8" onChange={(event) => setSecurityForm((current) => ({ ...current, confirmPassword: event.target.value }))} required type="password" value={securityForm.confirmPassword} /></label>
+                    <button className="more-detail-action" disabled={isSaving} type="submit">{isSaving ? 'Updating…' : 'Change password'}</button>
+                  </form>
                 </>
               )}
               {activePanel === 'notifications' && (
                 <>
                   <h2 id="more-detail-title">Notifications</h2>
-                  <p>Push and email notification controls are not available yet. Important account updates will appear in your activity history.</p>
-                  <Link className="more-detail-action is-secondary" to="/activity" onClick={() => setActivePanel('')}>View activity</Link>
+                  <p>Email and push notifications are not available yet. These settings won’t change the messages you receive.</p>
+                  <div className="more-toggle-list">
+                    {[
+                      ['emailAccountUpdates', 'Account updates', 'email'],
+                      ['emailSecurityAlerts', 'Security alerts', 'email'],
+                      ['pushNotifications', 'Push notifications', 'push'],
+                    ].map(([key, title, channel]) => <label className="more-balance-toggle" key={key}>
+                      <span><strong>{title}</strong><small>{notificationDelivery[channel] ? 'Available' : `${channel === 'email' ? 'Email' : 'Push'} delivery unavailable`}</small></span>
+                      <input checked={notifications[key]} disabled={isSaving || !notificationDelivery[channel]} onChange={(event) => updateNotification(key, event.target.checked)} type="checkbox" role="switch" />
+                    </label>)}
+                  </div>
                 </>
               )}
               {activePanel === 'preferences' && (
@@ -366,28 +739,44 @@ function More() {
                     <span><strong>Hide wallet balance</strong><small>Keep your balance private on this screen.</small></span>
                     <input
                       checked={hideBalance}
-                      onChange={(event) => updateBalancePrivacy(event.target.checked)}
+                      onChange={(event) => savePreference('hideWalletBalance', event.target.checked)}
                       type="checkbox"
                       role="switch"
                     />
                   </label>
-                  <p aria-live="polite" className="more-preference-message">{balancePreference.message || 'Your preference is saved on this device.'}</p>
+                  <p aria-live="polite" className="more-preference-message">{actionMessage || 'Preferences are saved to your account.'}</p>
                 </>
               )}
               {activePanel === 'help' && (
                 <>
                   <h2 id="more-detail-title">Help & Support</h2>
-                  <p>Browse product information and answers to common questions.</p>
-                  <Link className="more-detail-action" to="/#faq" onClick={() => setActivePanel('')}>Visit help & FAQs</Link>
+                  <p>Send a request to the GWIC team and track its status here.</p>
+                  <p className="more-form-note">Do not include passwords, BVNs, full bank account numbers, or other sensitive credentials in a support request.</p>
+                  <form className="more-form" onSubmit={createSupportRequest}>
+                    <label>Topic<select onChange={(event) => setSupportForm((current) => ({ ...current, category: event.target.value }))} value={supportForm.category}>
+                      <option value="account">Account</option><option value="verification">Verification</option><option value="payments">Payments</option><option value="technical">Technical issue</option><option value="other">Other</option>
+                    </select></label>
+                    <label>Subject<input maxLength="120" minLength="3" onChange={(event) => setSupportForm((current) => ({ ...current, subject: event.target.value }))} required value={supportForm.subject} /></label>
+                    <label>How can we help?<textarea maxLength="2000" minLength="10" onChange={(event) => setSupportForm((current) => ({ ...current, message: event.target.value }))} required rows="4" value={supportForm.message} /></label>
+                    <button className="more-detail-action" disabled={isSaving} type="submit">{isSaving ? 'Sending…' : 'Send support request'}</button>
+                  </form>
+                  <h3 className="more-subsection-title">Your requests</h3>
+                  {supportRequests.length
+                    ? <div className="more-support-list">{supportRequests.map((request) => <article className="more-support-item" key={request.reference}>
+                      <strong>{request.subject}</strong><small>{request.reference} · {request.status.replace('_', ' ')}</small><p>{request.message}</p>
+                    </article>)}</div>
+                    : <p>No support requests yet.</p>}
                 </>
               )}
               {activePanel === 'about' && (
                 <>
                   <h2 id="more-detail-title">About GWIC</h2>
-                  <p>Grow With Core — building better habits for stronger finances and a brighter future.</p>
-                  <Link className="more-detail-action is-secondary" to="/" onClick={() => setActivePanel('')}>Learn more</Link>
+                  <p>{about?.description || 'Grow With Core — building better habits for stronger finances and a brighter future.'}</p>
+                  {about?.products && <p>Products: {about.products.join(', ')}</p>}
+                  <Link className="more-detail-action is-secondary" to="/" onClick={() => setActivePanel('')}>Visit GWIC</Link>
                 </>
               )}
+              {actionMessage && !['preferences'].includes(activePanel) && <p aria-live="polite" className="more-action-message">{actionMessage}</p>}
               {activePanel === 'logout' && (
                 <>
                   <h2 id="more-detail-title">Sign out?</h2>
@@ -414,7 +803,7 @@ function More() {
       <nav aria-label="Main navigation" className="more-bottom-nav">
         <Link to="/dashboard"><MoreIcon name="home" /><span>Home</span></Link>
         <Link to="/core-lock"><MoreIcon name="core" /><span>Core Lock</span></Link>
-        <Link to="/dashboard#account-balances"><MoreIcon name="invest" /><span>Invest</span></Link>
+        <Link to="/invest"><MoreIcon name="invest" /><span>Invest</span></Link>
         <Link to="/portfolio"><MoreIcon name="portfolio" /><span>Portfolio</span></Link>
         <Link aria-current="page" className="is-active" to="/more"><MoreIcon name="more" /><span>More</span></Link>
       </nav>

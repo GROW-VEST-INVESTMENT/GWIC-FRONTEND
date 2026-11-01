@@ -178,27 +178,6 @@
   stroke: rgba(255, 255, 255, 0.94);
 }
 
-.more-profile-camera {
-  position: absolute;
-  right: -1px;
-  bottom: -1px;
-  display: grid;
-  width: 24px;
-  height: 24px;
-  place-items: center;
-  border: 2px solid #f8fbf9;
-  border-radius: 50%;
-  background: #fff;
-  color: #087849;
-}
-
-.more-profile-camera .more-icon {
-  width: 14px;
-  height: 14px;
-  fill: none;
-  stroke: currentColor;
-}
-
 .more-profile-copy {
   display: grid;
   min-width: 0;
@@ -778,6 +757,174 @@
 
 .more-balance-toggle input {
   width: 20px;
+}
+
+.more-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.more-form > label,
+.more-form-label {
+  display: grid;
+  gap: 6px;
+  color: #29493a;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.more-form input:not([type="checkbox"]),
+.more-form select,
+.more-form textarea,
+.more-form-label select {
+  width: 100%;
+  min-height: 43px;
+  padding: 10px 11px;
+  border: 1px solid #ceded4;
+  border-radius: 9px;
+  background: #fff;
+  color: #29493a;
+  font: inherit;
+}
+
+.more-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.more-form input[readonly] {
+  background: #f0f5f2;
+  color: #71847b;
+}
+
+.more-form input:focus-visible,
+.more-form select:focus-visible,
+.more-form textarea:focus-visible {
+  outline: 3px solid rgba(8, 120, 73, 0.2);
+  border-color: #087849;
+}
+
+.more-form .more-detail-action {
+  width: 100%;
+  margin-top: 2px;
+}
+
+.more-form-note {
+  color: #71847b;
+  font-size: 0.77rem;
+  line-height: 1.45;
+}
+
+.more-checkbox-label {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 9px !important;
+  color: #526d60 !important;
+  font-size: 0.78rem !important;
+  font-weight: 500 !important;
+  line-height: 1.4;
+}
+
+.more-checkbox-label input {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  accent-color: #087849;
+}
+
+.more-linked-banks,
+.more-support-list,
+.more-toggle-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.more-linked-bank,
+.more-support-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e0ebe4;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.more-linked-bank > span:first-child,
+.more-support-item {
+  min-width: 0;
+}
+
+.more-linked-bank > span:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.more-linked-bank strong,
+.more-support-item strong {
+  color: #29493a;
+  font-size: 0.83rem;
+}
+
+.more-linked-bank small,
+.more-support-item small {
+  color: #71847b;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.more-bank-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.more-bank-actions button {
+  padding: 5px 7px;
+  border: 1px solid #d8e8de;
+  border-radius: 7px;
+  background: #fff;
+  color: #087849;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.more-bank-actions button:disabled,
+.more-detail-action:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.more-subsection-title {
+  margin: 20px 0 0;
+  color: #29493a;
+  font-size: 0.91rem;
+}
+
+.more-support-item {
+  display: grid;
+  gap: 5px;
+}
+
+.more-support-item p {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.more-toggle-list .more-balance-toggle {
+  padding: 11px 0;
+  border-bottom: 1px solid #e9efeb;
+}
+
+.more-action-message {
+  margin: 12px 0 0;
+  color: #087849 !important;
+  font-size: 0.82rem !important;
   height: 20px;
   accent-color: #087849;
 }
@@ -900,6 +1047,13 @@
     height: 21px;
   }
 
+  .more-header-profile-photo {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    object-fit: cover;
+  }
+
   .more-profile-summary {
     gap: 13px;
     margin-top: 12px;
@@ -913,6 +1067,39 @@
   .more-profile-avatar .more-icon {
     width: 34px;
     height: 34px;
+  }
+
+  .more-profile-photo {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    object-fit: cover;
+  }
+
+  .more-profile-photo-controls {
+    display: grid;
+    gap: 8px;
+    margin: 12px 0 4px;
+  }
+
+  .more-profile-photo-controls > label {
+    color: #29493a;
+    font-size: 0.82rem;
+    font-weight: 650;
+  }
+
+  .more-profile-photo-controls > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .more-profile-photo-controls .more-detail-action {
+    margin-top: 0;
+  }
+
+  .more-file-input {
+    display: none;
   }
 
   .more-profile-copy > strong {

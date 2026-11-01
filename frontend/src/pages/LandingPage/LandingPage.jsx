@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import BrandMark from '../../components/BrandMark';
 
 const benefits = [
-  { icon: 'shield', title: 'Secure', text: 'Your money, protected.' },
-  { icon: 'chart', title: 'High Returns', text: 'Grow your wealth over time.' },
-  { icon: 'bolt', title: 'No Hidden Fees', text: '100% transparency, always.' },
+  { icon: 'shield', title: 'Plan with purpose', text: 'Set goals around the things that matter to you.' },
+  { icon: 'chart', title: 'Understand the options', text: 'Review product details, access terms, and risks before you decide.' },
+  { icon: 'bolt', title: 'Know what’s available', text: 'See product status clearly before taking your next step.' },
 ];
 
 const products = [
@@ -13,15 +13,15 @@ const products = [
     slug: 'core-lock',
     icon: 'coins',
     title: 'Core Lock',
-    subtitle: 'Automated & fixed savings',
-    text: 'Lock your funds for 30, 90, 180 or 365 days and earn competitive yields.',
+    subtitle: 'Structured savings for a chosen term',
+    text: 'Core Lock is not available yet. We’re preparing the product and its operating controls before customers can start a plan.',
   },
   {
     slug: 'equity-core',
     icon: 'chart',
     title: 'Equity Core',
-    subtitle: 'Fractional stock investing',
-    text: 'Invest in NGX and global stocks with as little as ₦5,000.',
+    subtitle: 'A planned stock-investing product',
+    text: 'Equity Core is not available yet. Stock investing involves risk, and product access and terms will be shared before launch.',
   },
 ];
 
@@ -58,10 +58,10 @@ function DashboardPreview() {
             <BrandMark />
             <div><strong>GWIC</strong><small>GrowWithCore</small></div>
           </div>
-          <div className="balance-label">Wallet Balance</div>
+          <div className="balance-label">Example wallet balance</div>
           <div className="balance-amount">₦750,432.50</div>
-          <div className="balance-change"><span>↗ +12.5%</span><small>vs. last month</small></div>
-          <svg className="balance-chart" viewBox="0 0 420 150" role="img" aria-label="Rising balance chart">
+          <div className="balance-change"><span>Illustrative preview</span><small>Not actual performance</small></div>
+          <svg className="balance-chart" viewBox="0 0 420 150" role="img" aria-label="Illustrative balance chart, not actual account performance">
             <defs><linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#75e742" stopOpacity=".35" /><stop offset="1" stopColor="#75e742" stopOpacity="0" /></linearGradient></defs>
             <path d="M0 128 48 115 84 119 126 94 158 101 204 68 235 76 282 48 315 57 361 23 420 8v142H0Z" fill="url(#chartFill)" />
             <path d="M0 128 48 115 84 119 126 94 158 101 204 68 235 76 282 48 315 57 361 23 420 8" fill="none" stroke="#78eb43" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
@@ -104,14 +104,14 @@ function LandingPage() {
           <main id="top">
             <section className="hero-content">
               <div className="hero-copy">
-                <h1>Your Goals.<br />Our Core.<br /><span>Real Growth.</span></h1>
-                <p>Build your future with GWIC — the all-in-one platform for smart savings and intelligent investing.</p>
+                <h1>Your Goals.<br />Our Core.<br /><span>Plan with purpose.</span></h1>
+                <p>Set savings goals, manage wallet activity, and explore upcoming savings and investing products. Product access depends on availability and final terms.</p>
                 <div className="usage-guide flex w-fit flex-wrap items-center gap-[clamp(3px,1vw,13px)]" aria-label="How GWIC works">
-                  <span className="guide-step inline-flex items-center gap-[7px] animate-[guide-step_8.4s_ease-in-out_infinite]"><b>01</b> Save</span>
+                  <span className="guide-step inline-flex items-center gap-[7px] animate-[guide-step_8.4s_ease-in-out_infinite]"><b>01</b> Set a goal</span>
                   <span className="guide-arrow" aria-hidden="true">→</span>
-                  <span className="guide-step inline-flex items-center gap-[7px] [animation-delay:2.8s] animate-[guide-step_8.4s_ease-in-out_infinite]"><b>02</b> Invest</span>
+                  <span className="guide-step inline-flex items-center gap-[7px] [animation-delay:2.8s] animate-[guide-step_8.4s_ease-in-out_infinite]"><b>02</b> Review options</span>
                   <span className="guide-arrow" aria-hidden="true">→</span>
-                  <span className="guide-step inline-flex items-center gap-[7px] [animation-delay:5.6s] animate-[guide-step_8.4s_ease-in-out_infinite]"><b>03</b> Grow</span>
+                  <span className="guide-step inline-flex items-center gap-[7px] [animation-delay:5.6s] animate-[guide-step_8.4s_ease-in-out_infinite]"><b>03</b> Track progress</span>
                 </div>
               </div>
               <DashboardPreview />
@@ -172,16 +172,16 @@ function LandingPage() {
         </div>
         <div className="faq-list">
           <details>
-            <summary>What is Core Lock?</summary>
-            <p>Core Lock is a proposed structured-savings product for goals and selected time periods. Access to funds, fees, and returns depend on the final product and partner terms.</p>
+            <summary>What can I use on GWIC today?</summary>
+            <p>You can create an account, set savings goals, and manage wallet activity. Core Lock plans and Equity Core stock investing are not currently available. We’ll share their terms and availability before they launch.</p>
           </details>
           <details>
             <summary>What should I know about Equity Core?</summary>
-            <p>Equity Core is designed to provide access to eligible stock investments. Stock values can rise or fall, and you may lose money. Availability depends on the final operating structure and partners.</p>
+            <p>Equity Core is a planned stock-investing product and is not currently available. If launched, stock values can rise or fall and you may lose money. Product access and terms will be shared before launch.</p>
           </details>
           <details>
             <summary>Are returns or principal guaranteed?</summary>
-            <p>No. Returns, liquidity, and risk depend on the specific financial product. Review its terms and disclosures before investing or committing funds.</p>
+            <p>No. Returns, liquidity, fees, and risk depend on the specific financial product. Review the final terms and disclosures before investing or committing funds. The figures in the dashboard preview are illustrative, not a promise or actual customer result.</p>
           </details>
         </div>
       </section>
@@ -193,7 +193,7 @@ function LandingPage() {
               <BrandMark />
               <span><strong>GWIC</strong><small>GROW WITH CORE</small></span>
             </Link>
-            <p>Building stronger financial habits. Growing with purpose.</p>
+            <p>Set financial goals, manage wallet activity, and learn about products as they become available.</p>
           </div>
           <nav className="footer-nav" aria-label="Explore GWIC">
             <strong>Explore</strong>

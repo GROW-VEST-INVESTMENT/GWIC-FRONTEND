@@ -5,7 +5,7 @@ import './Dashboard.css';
 const navigation = [
   { label: 'Home', icon: 'home', target: 'dashboard-top' },
   { label: 'Core Lock', icon: 'lock', path: '/core-lock' },
-  { label: 'Invest', icon: 'invest', target: 'account-balances' },
+  { label: 'Invest', icon: 'invest', path: '/invest' },
   { label: 'Portfolio', icon: 'portfolio', path: '/portfolio' },
 ];
 
@@ -13,7 +13,7 @@ const quickActions = [
   { label: 'Deposit', icon: 'deposit', available: true, walletAction: 'deposit' },
   { label: 'Withdraw', icon: 'withdraw', available: true, walletAction: 'withdraw' },
   { label: 'Core Lock', icon: 'lock', available: true, path: '/core-lock' },
-  { label: 'Invest', icon: 'invest', available: false },
+  { label: 'Invest', icon: 'invest', available: true, path: '/invest' },
 ];
 
 function Icon({ name }) {
@@ -125,15 +125,19 @@ function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [goalNotice] = useState(location.state?.goalNotice || '');
-  const [walletAction, setWalletAction] = useState('');
+  const [walletAction, setWalletAction] = useState(() => (
+    location.state?.openWalletAction === 'deposit' ? 'deposit' : ''
+  ));
   const [walletActionError, setWalletActionError] = useState('');
   const [walletActionMessage, setWalletActionMessage] = useState('');
   const [withdrawalResult, setWithdrawalResult] = useState(null);
   const [isWalletActionPending, setIsWalletActionPending] = useState(false);
   const [banks, setBanks] = useState([]);
+  const [savedBanks, setSavedBanks] = useState([]);
   const [isLoadingBanks, setIsLoadingBanks] = useState(false);
   const [bankSearch, setBankSearch] = useState('');
   const [withdrawalBankCode, setWithdrawalBankCode] = useState('');
+  const [withdrawalLinkedBankId, setWithdrawalLinkedBankId] = useState('');
   const [withdrawalStep, setWithdrawalStep] = useState(1);
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [verifiedBankAccount, setVerifiedBankAccount] = useState(null);
@@ -249,18 +253,59 @@ function Dashboard() {
     setWithdrawalAmount('');
     setBankSearch('');
     setWithdrawalBankCode('');
+    setWithdrawalLinkedBankId('');
     setVerifiedBankAccount(null);
     setWithdrawalRequestKey('');
     await loadBanks();
   }
 
+  useEffect(() => {
+    if (location.state?.openWalletAction !== 'deposit') return;
+
+    navigate('/dashboard#account-balances', {
+      replace: true,
+      state: { ...location.state, openWalletAction: null },
+    });
+  }, [location.state, navigate]);
+
   async function loadBanks() {
     setWalletActionError('');
     setIsLoadingBanks(true);
     try {
-      const response = await fetch('/api/wallet/banks', { credentials: 'include', headers: { Accept: 'application/json' } });
+      const [bankFetch, linkedFetch] = await Promise.allSettled([
+        fetch('/api/wallet/banks', { credentials: 'include', headers: { Accept: 'application/json' } }),
+        fetch('/api/account/banks', { credentials: 'include', headers: { Accept: 'application/json' } }),
+      ]);
+      if (linkedFetch.status === 'rejected') throw linkedFetch.reason;
+      const linkedResponse = linkedFetch.value;
+      const linkedResult = await linkedResponse.json();
+      if (linkedResponse.status === 401) {
+        navigate('/login', { replace: true });
+        return;
+      }
+      if (!linkedResponse.ok) throw new Error(linkedResult.message || 'We could not load your linked bank accounts.');
+      setSavedBanks(linkedResult.banks);
+
+      if (bankFetch.status === 'rejected') {
+        setBanks([]);
+        setWalletActionError(linkedResult.banks.length
+          ? 'The bank directory is unavailable. You can still use a linked account.'
+          : 'We could not load the bank directory. Try again shortly.');
+        return;
+      }
+      const response = bankFetch.value;
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'We could not load the bank list.');
+      if (response.status === 401 || linkedResponse.status === 401) {
+        navigate('/login', { replace: true });
+        return;
+      }
+      if (!response.ok) {
+        setBanks([]);
+        setWalletActionError(linkedResult.banks.length
+          ? 'The bank directory is unavailable. You can still use a linked account.'
+          : result.message || 'We could not load the bank directory.');
+        return;
+      }
       setBanks(result.banks);
     } catch (requestError) {
       setWalletActionError(requestError instanceof TypeError
@@ -293,6 +338,17 @@ function Dashboard() {
     }
 
     if (!isDeposit && withdrawalStep === 2) {
+      if (withdrawalLinkedBankId) {
+        const linkedBank = savedBanks.find((bank) => bank.id === withdrawalLinkedBankId);
+        if (!linkedBank) {
+          setWalletActionError('That linked bank account is no longer available. Reload your bank accounts and try again.');
+          return;
+        }
+        setVerifiedBankAccount({ ...linkedBank, linkedBankAccountId: linkedBank.id });
+        setWithdrawalRequestKey(crypto.randomUUID());
+        setWithdrawalStep(3);
+        return;
+      }
       setIsWalletActionPending(true);
       try {
         const response = await fetch('/api/wallet/withdrawals/resolve', {
@@ -337,8 +393,9 @@ function Dashboard() {
           ? { amount: Number(formData.get('amount')) }
           : {
             amount: Number(withdrawalAmount),
-            accountNumber: verifiedBankAccount.accountNumber,
-            bankCode: verifiedBankAccount.bankCode,
+            ...(verifiedBankAccount.linkedBankAccountId
+              ? { linkedBankAccountId: verifiedBankAccount.linkedBankAccountId }
+              : { accountNumber: verifiedBankAccount.accountNumber, bankCode: verifiedBankAccount.bankCode }),
             password: formData.get('withdrawal-password'),
             idempotencyKey: withdrawalRequestKey,
           }),
@@ -455,7 +512,9 @@ function Dashboard() {
           <button aria-label="Notifications are not available yet" className="notification-button" disabled type="button">
             <Icon name="bell" />
           </button>
-          <div aria-label={`Signed in as ${dashboard.user.name}`} className="profile-avatar">{initials}</div>
+          <div aria-label={`Signed in as ${dashboard.user.name}`} className="profile-avatar">
+            {dashboard.user.photoUrl ? <img alt="" src={dashboard.user.photoUrl} /> : initials}
+          </div>
           <button className="profile-name" onClick={handleLogout} type="button" disabled={isLoggingOut}>
             {isLoggingOut ? 'Signing out…' : 'Sign out'}
           </button>
@@ -625,6 +684,27 @@ function Dashboard() {
                       <button onClick={() => { setWithdrawalStep(1); setVerifiedBankAccount(null); }} type="button">Change amount</button>
                     </div>
                     <p className="withdrawal-name-guidance">The bank account name must match your profile name: <strong>{dashboard.user.name}</strong>.</p>
+                    {savedBanks.length > 0 && (
+                      <label>
+                        Linked bank account
+                        <select
+                          onChange={(event) => setWithdrawalLinkedBankId(event.target.value)}
+                          value={withdrawalLinkedBankId}
+                        >
+                          <option value="">Add a different bank account</option>
+                          {savedBanks.map((bank) => (
+                            <option key={bank.id} value={bank.id}>
+                              {bank.bankName} ···· {bank.accountLast4}{bank.isDefault ? ' (Default)' : ''}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    )}
+                    {withdrawalLinkedBankId && (
+                      <p className="withdrawal-inline-note">Your saved, verified bank account will be used. Confirm your password on the next step.</p>
+                    )}
+                    {!withdrawalLinkedBankId && (
+                      <>
                     <label>
                       Search banks
                       <input
@@ -668,6 +748,8 @@ function Dashboard() {
                       <input autoComplete="off" inputMode="numeric" maxLength="10" minLength="10" name="account-number" pattern="[0-9]{10}" placeholder="Enter account number" required />
                     </label>
                     <small className="wallet-name-check">We verify the account name with Paystack. No funds move during verification.</small>
+                      </>
+                    )}
                   </>
                 )}
                 {walletAction === 'withdraw' && withdrawalStep === 3 && verifiedBankAccount && (
@@ -695,7 +777,7 @@ function Dashboard() {
                   </>
                 )}
                 {walletActionError && <p className="dashboard-message is-error" role="alert">{walletActionError}</p>}
-                <button className="dashboard-button" disabled={isWalletActionPending || (walletAction === 'withdraw' && withdrawalStep === 2 && (isLoadingBanks || banks.length === 0))} type="submit">
+                <button className="dashboard-button" disabled={isWalletActionPending || (walletAction === 'withdraw' && withdrawalStep === 2 && (isLoadingBanks || (banks.length === 0 && savedBanks.length === 0)))} type="submit">
                   {isWalletActionPending
                     ? walletAction === 'withdraw' && withdrawalStep === 2 ? 'Verifying account…' : 'Processing…'
                     : walletAction === 'deposit' ? 'Continue to Paystack'

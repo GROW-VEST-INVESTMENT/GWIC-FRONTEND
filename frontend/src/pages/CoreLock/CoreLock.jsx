@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './CoreLock.css';
 
 const lockSteps = [
@@ -80,12 +80,17 @@ function formatDate(date) {
 
 function CoreLock() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [coreLock, setCoreLock] = useState(null);
   const [savings, setSavings] = useState(null);
   const [wallet, setWallet] = useState(null);
   const [error, setError] = useState('');
   const [actionMessage, setActionMessage] = useState('');
-  const [productType, setProductType] = useState('CORE_TARGET');
+  const [productType, setProductType] = useState(() => (
+    ['CORE_TARGET', 'CORE_LOCK'].includes(searchParams.get('product'))
+      ? searchParams.get('product')
+      : 'CORE_TARGET'
+  ));
   const [lockPeriodDays, setLockPeriodDays] = useState(30);
   const [amount, setAmount] = useState('');
   const [password, setPassword] = useState('');
@@ -293,13 +298,15 @@ function CoreLock() {
         <nav className="core-lock-desktop-nav" aria-label="Account navigation">
           <Link to="/dashboard"><Icon name="home" /> Home</Link>
           <span className="is-current"><Icon name="lock" /> Core Lock</span>
-          <Link to="/dashboard#account-balances"><Icon name="invest" /> Invest</Link>
+          <Link to="/invest"><Icon name="invest" /> Invest</Link>
           <Link to="/portfolio"><Icon name="portfolio" /> Portfolio</Link>
           <Link to="/more"><Icon name="more" /> More</Link>
         </nav>
         <div className="core-lock-profile">
           <button aria-label="Notifications are not available yet" className="core-lock-notifications" disabled type="button"><Icon name="bell" /></button>
-          <span aria-label={`Signed in as ${userName}`} className="core-lock-avatar">{initials}</span>
+          <span aria-label={`Signed in as ${userName}`} className="core-lock-avatar">
+            {coreLock.user.photoUrl ? <img alt="" src={coreLock.user.photoUrl} /> : initials}
+          </span>
           <button className="core-lock-signout" disabled={isLoggingOut} onClick={handleLogout} type="button">{isLoggingOut ? 'Signing out…' : 'Sign out'}</button>
         </div>
       </header>
@@ -368,7 +375,7 @@ function CoreLock() {
           </div>
         </section>
 
-        <form className="core-lock-invest-form" onSubmit={handleCreatePlan}>
+        <form className="core-lock-invest-form" id="start-plan" onSubmit={handleCreatePlan}>
           <div className="core-lock-section-heading">
             <h2>Start a plan</h2>
             <span>Available wallet: {formatMoney(wallet.balance, currency)}</span>
@@ -522,7 +529,7 @@ function CoreLock() {
       <nav aria-label="Mobile dashboard navigation" className="core-lock-mobile-nav">
         <Link to="/dashboard"><Icon name="home" /><span>Home</span></Link>
         <Link aria-current="page" className="is-active" to="/core-lock"><Icon name="lock" /><span>Core Lock</span></Link>
-        <Link to="/dashboard#account-balances"><Icon name="invest" /><span>Invest</span></Link>
+        <Link to="/invest"><Icon name="invest" /><span>Invest</span></Link>
         <Link to="/portfolio"><Icon name="portfolio" /><span>Portfolio</span></Link>
         <Link to="/more"><Icon name="more" /><span>More</span></Link>
       </nav>

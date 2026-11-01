@@ -16,7 +16,8 @@ async function requireAuth(req, res, next) {
 
   try {
     const { sub, ver } = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(sub).select('name email sessionVersion');
+    const user = await User.findById(sub)
+      .select('name email phone role status isKycVerified sessionVersion +profilePhotoPublicId +profilePhotoVersion');
     if (!user || user.sessionVersion !== ver) {
       return res.status(401).json({ message: 'Please log in to continue.' });
     }
