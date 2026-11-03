@@ -8,6 +8,7 @@ const LinkedBankAccount = require('../models/LinkedBankAccount');
 const { paystackRequest, verifyWebhookSignature } = require('../services/paystack');
 const { createJournal } = require('../services/coreSavings');
 const { getOrCreateWallet } = require('../services/wallet');
+const Notification = require('../models/Notification');
 
 const MINIMUM_KOBO = 10000;
 const MAXIMUM_DEPOSIT_KOBO = 100000000;
@@ -42,6 +43,17 @@ async function creditVerifiedDeposit(transaction) {
       });
       current.status = 'successful';
       await current.save({ session });
+
+      await Notification.create({
+        userId: current.userId,
+        title: 'Deposit confirmed',
+        message: `Your wallet deposit of ₦${(current.amountKobo / 100).toLocaleString()} was confirmed successfully.`,
+        category: 'Transactions',
+        type: 'success',
+        icon: 'wallet',
+        color: 'green',
+        amount: `₦${(current.amountKobo / 100).toLocaleString()}`,
+      });
     });
   } finally {
     await session.endSession();
@@ -236,9 +248,22 @@ async function initializeDeposit(req, res, next) {
   let transaction;
   try {
     const reference = `GWIC_DEP_${crypto.randomUUID()}`;
-    const frontendUrl = process.env.ADMIN_URL || process.env.FRONTEND_URL;
+    const requestOrigin = typeof req.headers.origin === 'string' && req.headers.origin.trim()
+      ? req.headers.origin.trim()
+      : '';
+    const frontendUrl = (() => {
+      if (requestOrigin) {
+        try {
+          const parsed = new URL(requestOrigin);
+          if (['http:', 'https:'].includes(parsed.protocol)) return parsed.origin;
+        } catch {
+          // Ignore malformed origins and fall back to configured values below.
+        }
+      }
+      return process.env.FRONTEND_URL || process.env.ADMIN_URL || '';
+    })();
     if (!frontendUrl) {
-      return res.status(503).json({ message: 'Payment return address is not configured. Set ADMIN_URL or FRONTEND_URL in Render.' });
+      return res.status(503).json({ message: 'Payment return address is not configured. Set FRONTEND_URL or ADMIN_URL in Render.' });
     }
     [transaction] = await WalletTransaction.create([{
       reference,

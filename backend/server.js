@@ -17,23 +17,45 @@ const walletRoutes = require('./routes/walletRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const accountReviewRoutes = require('./routes/accountReviewRoutes');
 const portfolioRoutes = require('./routes/portfolioRoutes');
+const notificationsRoutes = require('./routes/notificationsRoutes');
 const { startCoreSavingsScheduler } = require('./services/coreSavingsScheduler');
 const { handlePaystackWebhook } = require('./controllers/walletController');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const adminUrl = process.env.ADMIN_URL || process.env.FRONTEND_URL;
+const configuredFrontendOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.ADMIN_URL,
+  ...(process.env.CORS_ORIGINS || '').split(','),
+].filter(Boolean).map((origin) => origin.trim());
 const getSessionToken = (req) => req.headers.cookie?.split(';').map((part) => part.trim())
   .find((part) => part.startsWith('gwic_session='))?.slice('gwic_session='.length);
+const useCrossSiteCookies = (() => {
+  const hosts = configuredFrontendOrigins
+    .map((origin) => {
+      try {
+        return new URL(origin).hostname.toLowerCase();
+      } catch {
+        return '';
+      }
+    })
+    .filter(Boolean);
+
+  return process.env.NODE_ENV === 'production' || hosts.some((host) => !['localhost', '127.0.0.1'].includes(host));
+})();
+const getCookieOptions = () => ({
+  httpOnly: true,
+  secure: useCrossSiteCookies,
+  sameSite: useCrossSiteCookies ? 'none' : 'lax',
+  path: '/',
+  maxAge: 60 * 60 * 1000,
+});
 const allowedOrigins = [
-  adminUrl,
-  ...(process.env.CORS_ORIGINS || '').split(','),
+  ...configuredFrontendOrigins,
   ...(process.env.NODE_ENV !== 'production'
     ? ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:4173', 'http://127.0.0.1:4173']
     : []),
-]
-  .filter(Boolean)
-  .map((origin) => origin.trim());
+].filter(Boolean);
 
 const isAllowedOrigin = (origin) => {
   if (!origin) return true;
@@ -73,6 +95,7 @@ app.use('/api/wallet', walletRoutes);
 app.use('/api/account', accountRoutes);
 app.use('/api/account-review', accountReviewRoutes);
 app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 app.get('/', (req, res) => {
   res.json({
@@ -199,13 +222,7 @@ app.post('/api/auth/login', async (req, res, next) => {
       process.env.JWT_SECRET,
       { expiresIn: '1h' },
     );
-    res.cookie('gwic_session', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 60 * 60 * 1000,
-      path: '/',
-    });
+    res.cookie('gwic_session', token, getCookieOptions());
 
     return res.json({
       message: 'You are now logged in.',
@@ -372,12 +389,7 @@ app.post('/api/auth/logout', async (req, res, next) => {
     }
   }
 
-  res.clearCookie('gwic_session', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    path: '/',
-  });
+  res.clearCookie('gwic_session', getCookieOptions());
   return res.json({ message: 'You are now logged out.' });
 });
 

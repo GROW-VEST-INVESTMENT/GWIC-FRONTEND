@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { notifyUser } from '../../utils/notifications';
 import './Dashboard.css';
 
 const navigation = [
@@ -108,15 +109,16 @@ async function fetchDashboardData() {
     fetch('/api/dashboard', { credentials: 'include', headers: { Accept: 'application/json' } }),
     fetch('/api/wallet', { credentials: 'include', headers: { Accept: 'application/json' } }),
   ]);
-  if (dashboardResponse.status === 401 || walletResponse.status === 401) {
-    return { unauthorized: true };
-  }
-  if (!dashboardResponse.ok || !walletResponse.ok) {
-    throw new Error('We could not load your dashboard. Please try again.');
-  }
+const isPaymentReturn = new URLSearchParams(location.search).get('payment') === 'paystack';
+if (dashboardResponse.status === 401 || walletResponse.status === 401) {
+  return { unauthorized: true, isPaymentReturn };
+}
+if (!dashboardResponse.ok || !walletResponse.ok) {
+  throw new Error('We could not load your dashboard. Please try again.');
+}
 
-  const [dashboard, wallet] = await Promise.all([dashboardResponse.json(), walletResponse.json()]);
-  return { dashboard: { ...dashboard, wallet }, unauthorized: false };
+const [dashboard, wallet] = await Promise.all([dashboardResponse.json(), walletResponse.json()]);
+return { dashboard: { ...dashboard, wallet }, unauthorized: false, isPaymentReturn };
 }
 
 function Dashboard() {
@@ -151,6 +153,10 @@ function Dashboard() {
     try {
       const result = await fetchDashboardData();
       if (result.unauthorized) {
+        if (result.isPaymentReturn) {
+          setError('Your payment was successful. We are confirming your session and refreshing your dashboard.');
+          return;
+        }
         navigate('/login', { replace: true });
         return;
       }
@@ -174,6 +180,10 @@ function Dashboard() {
         const result = await fetchDashboardData();
         if (!isActive) return;
         if (result.unauthorized) {
+          if (result.isPaymentReturn) {
+            setError('Your payment was successful. We are confirming your session and refreshing your dashboard.');
+            return;
+          }
           navigate('/login', { replace: true });
           return;
         }
@@ -230,6 +240,13 @@ function Dashboard() {
         if (!response.ok) throw new Error(result.message || 'We could not confirm this deposit yet.');
         if (!isActive) return;
         setWalletActionMessage('Deposit confirmed and added to your wallet.');
+        notifyUser({
+          title: 'Deposit confirmed',
+          message: 'Your wallet deposit has been credited successfully.',
+          type: 'success',
+          duration: 7000,
+          requireBrowserPermission: true,
+        });
         await loadDashboard();
       } catch (requestError) {
         if (isActive) setWalletActionError(requestError.message);
@@ -510,8 +527,9 @@ function Dashboard() {
           <button onClick={() => navigate('/more')} type="button"><Icon name="more" />More</button>
         </nav>
         <div className="dashboard-profile">
-          <button aria-label="Notifications are not available yet" className="notification-button" disabled type="button">
+          <button aria-label="Open notifications" className="notification-button" onClick={() => navigate('/notifications')} type="button">
             <Icon name="bell" />
+            <span className="notification-badge">4</span>
           </button>
           <div aria-label={`Signed in as ${dashboard.user.name}`} className="profile-avatar">
             {dashboard.user.photoUrl ? <img alt="" src={dashboard.user.photoUrl} /> : initials}
