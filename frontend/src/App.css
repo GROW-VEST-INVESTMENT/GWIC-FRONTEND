@@ -112,15 +112,11 @@
 }
 
 .brand-mark {
-  position: relative;
   display: block;
   width: 42px;
   height: 42px;
-  object-fit: cover;
-  border-radius: 50%;
-  background: transparent;
-  box-shadow: none;
-  overflow: hidden;
+  flex: 0 0 auto;
+  object-fit: contain;
 }
 
 .mark-bar {
@@ -710,4 +706,3 @@
     grid-template-columns: 1fr;
   }
 }
-

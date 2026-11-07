@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import BrandMark from '../../components/BrandMark';
 import '../Dashboard/Dashboard.css';
 import './Activity.css';
 
@@ -94,7 +95,7 @@ function Activity() {
       } catch (requestError) {
         if (requestError.name === 'AbortError') return;
         setError(requestError instanceof TypeError
-          ? 'We could not reach GWIC. Check your connection and try again.'
+          ? 'We could not reach Kalma Capital. Check your connection and try again.'
           : requestError.message);
       } finally {
         if (!controller.signal.aborted) setIsLoading(false);
@@ -126,7 +127,7 @@ function Activity() {
       setHasMore(result.hasMore);
     } catch (requestError) {
       setError(requestError instanceof TypeError
-        ? 'We could not reach GWIC. Check your connection and try again.'
+        ? 'We could not reach Kalma Capital. Check your connection and try again.'
         : requestError.message);
     } finally {
       setIsLoadingMore(false);
@@ -136,15 +137,9 @@ function Activity() {
   return (
     <div className="dashboard-app activity-page">
       <header className="dashboard-header">
-        <Link className="dashboard-brand" to="/dashboard" aria-label="Back to dashboard">
-          <img
-            src="/gwic-logo-v2.png"
-            alt="GWIC logo"
-            className="dashboard-brand-mark"
-            loading="eager"
-            decoding="async"
-          />
-          <span><strong>GWIC</strong><small>GrowWithCore</small></span>
+        <Link className="dashboard-brand" to="/dashboard" aria-label="Back to Kalma Capital dashboard">
+          <BrandMark className="dashboard-brand-mark" />
+          <span><strong>KALMA CAPITAL</strong><small>Powered by GWIC</small></span>
         </Link>
         <nav aria-label="Account navigation" className="desktop-dashboard-nav">
           <Link to="/dashboard">Dashboard</Link>

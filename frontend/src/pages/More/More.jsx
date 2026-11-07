@@ -11,7 +11,7 @@ const settings = [
   { id: 'notifications', icon: 'bell', title: 'Notifications', description: 'Choose how you want to receive account updates.' },
   { id: 'preferences', icon: 'settings', title: 'Preferences', description: 'Choose whether your wallet balance is visible.' },
   { id: 'help', icon: 'headset', title: 'Help & Support', description: 'Send a support request and track its status.' },
-  { id: 'about', icon: 'info', title: 'About GWIC', description: 'Learn more about Grow With Core.' },
+  { id: 'about', icon: 'info', title: 'About Kalma Capital', description: 'Learn more about Kalma Capital, powered by GWIC.' },
   { id: 'logout', icon: 'logout', title: 'Log Out', description: 'Securely sign out of your account.' },
 ];
 
@@ -194,7 +194,7 @@ function More() {
             return;
           }
           setAccountError(requestError instanceof TypeError
-            ? 'We could not reach GWIC. Check your connection and try again.'
+            ? 'We could not reach Kalma Capital. Check your connection and try again.'
             : requestError.message);
         }
       } finally {
@@ -264,7 +264,7 @@ function More() {
       navigate('/login', { replace: true });
     } catch (requestError) {
       setActionError(requestError instanceof TypeError
-        ? 'We could not reach GWIC. Check your connection and try again.'
+        ? 'We could not reach Kalma Capital. Check your connection and try again.'
         : requestError.message);
       setIsLoggingOut(false);
     }
@@ -496,9 +496,9 @@ function More() {
       <header className="more-header">
         <div className="more-header-top">
           <Link aria-label="Back to home" className="more-back" to="/dashboard"><MoreIcon name="arrowLeft" /></Link>
-          <Link aria-label="GWIC home" className="more-brand" to="/">
+          <Link aria-label="Kalma Capital home" className="more-brand" to="/">
             <BrandMark className="more-brand-mark" />
-            <span><strong>GWIC</strong><small>GrowWithCore</small></span>
+            <span><strong>KALMA CAPITAL</strong><small>Powered by GWIC</small></span>
           </Link>
           <nav aria-label="Account navigation" className="more-desktop-nav">
             <Link to="/dashboard"><MoreIcon name="home" />Home</Link>
@@ -675,8 +675,8 @@ function More() {
               {activePanel === 'banks' && (
                 <>
                   <h2 id="more-detail-title">Linked Bank Accounts</h2>
-                  <p>Link a bank account to make future withdrawals faster. GWIC verifies the account holder with its payment provider and stores a masked account reference.</p>
-                  <p className="more-form-note">{linkedBanks.length} of 3 bank accounts linked. Each account must be verified against your GWIC profile name.</p>
+                  <p>Link a bank account to make future withdrawals faster. Kalma Capital verifies the account holder with its payment provider and stores a masked account reference.</p>
+                  <p className="more-form-note">{linkedBanks.length} of 3 bank accounts linked. Each account must be verified against your Kalma Capital profile name.</p>
                   {bankLoading
                     ? <p aria-live="polite">Loading your linked bank accounts…</p>
                     : <div className="more-linked-banks">{linkedBanks.length
@@ -750,7 +750,8 @@ function More() {
               {activePanel === 'help' && (
                 <>
                   <h2 id="more-detail-title">Help & Support</h2>
-                  <p>Send a request to the GWIC team and track its status here.</p>
+                  <p>Send a request to the Kalma Capital team and track its status here.</p>
+                  <p>Prefer email? Contact <a className="more-contact-link" href="mailto:support@kalmacapital.com">support@kalmacapital.com</a>.</p>
                   <p className="more-form-note">Do not include passwords, BVNs, full bank account numbers, or other sensitive credentials in a support request.</p>
                   <form className="more-form" onSubmit={createSupportRequest}>
                     <label>Topic<select onChange={(event) => setSupportForm((current) => ({ ...current, category: event.target.value }))} value={supportForm.category}>
@@ -770,17 +771,18 @@ function More() {
               )}
               {activePanel === 'about' && (
                 <>
-                  <h2 id="more-detail-title">About GWIC</h2>
-                  <p>{about?.description || 'Grow With Core — building better habits for stronger finances and a brighter future.'}</p>
+                  <h2 id="more-detail-title">About Kalma Capital</h2>
+                  <p><strong>{about?.name || 'Kalma Capital'}</strong> — powered by {about?.parentCompany || 'GWIC'}.</p>
+                  <p>{about?.description || 'Plan with purpose and build better financial habits with Kalma Capital.'}</p>
                   {about?.products && <p>Products: {about.products.join(', ')}</p>}
-                  <Link className="more-detail-action is-secondary" to="/" onClick={() => setActivePanel('')}>Visit GWIC</Link>
+                  <Link className="more-detail-action is-secondary" to="/" onClick={() => setActivePanel('')}>Visit Kalma Capital</Link>
                 </>
               )}
               {actionMessage && !['preferences'].includes(activePanel) && <p aria-live="polite" className="more-action-message">{actionMessage}</p>}
               {activePanel === 'logout' && (
                 <>
                   <h2 id="more-detail-title">Sign out?</h2>
-                  <p>You’ll need to sign in again to access your GWIC account.</p>
+                  <p>You’ll need to sign in again to access your Kalma Capital account.</p>
                   <div className="more-logout-actions">
                     <button className="more-detail-action is-secondary" onClick={() => setActivePanel('')} type="button">Stay signed in</button>
                     <button className="more-detail-action is-danger" disabled={isLoggingOut} onClick={handleLogout} type="button">
@@ -795,8 +797,8 @@ function More() {
 
         <aside className="more-brand-card">
           <span className="more-brand-card-icon"><MoreIcon name="sprout" /></span>
-          <span><strong>Grow With Core</strong><small>Better habits. Stronger finances. A brighter future.</small></span>
-          <span className="more-brand-card-logo"><BrandMark /><strong>GWIC<small>GrowWithCore</small></strong></span>
+          <span><strong>KALMA CAPITAL</strong><small>Plan with purpose.</small></span>
+          <span className="more-brand-card-logo"><BrandMark /><strong>KALMA CAPITAL<small>Powered by GWIC · Grow with Core</small></strong></span>
         </aside>
       </main>
 

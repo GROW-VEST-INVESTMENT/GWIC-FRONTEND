@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import BrandMark from '../../components/BrandMark';
 import './Dashboard.css';
 
 const navigation = [
@@ -38,18 +39,6 @@ function Icon({ name }) {
     <svg aria-hidden="true" className="dashboard-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
       {paths[name] || paths.more}
     </svg>
-  );
-}
-
-function DashboardLogo({ className }) {
-  return (
-    <img
-      src="/gwic-logo-v2.png"
-      alt="GWIC logo"
-      className={className}
-      loading="eager"
-      decoding="async"
-    />
   );
 }
 
@@ -159,7 +148,7 @@ function Dashboard() {
       setDashboard(result.dashboard);
     } catch (requestError) {
       setError(requestError instanceof TypeError
-        ? 'We could not reach GWIC. Check your connection and try again.'
+        ? 'We could not reach Kalma Capital. Check your connection and try again.'
         : requestError.message);
     } finally {
       setIsLoading(false);
@@ -181,7 +170,7 @@ function Dashboard() {
       } catch (requestError) {
         if (isActive) {
           setError(requestError instanceof TypeError
-            ? 'We could not reach GWIC. Check your connection and try again.'
+            ? 'We could not reach Kalma Capital. Check your connection and try again.'
             : requestError.message);
         }
       } finally {
@@ -310,7 +299,7 @@ function Dashboard() {
       setBanks(result.banks);
     } catch (requestError) {
       setWalletActionError(requestError instanceof TypeError
-        ? 'We could not reach GWIC. Check your connection and try again.'
+        ? 'We could not reach Kalma Capital. Check your connection and try again.'
         : requestError.message);
     } finally {
       setIsLoadingBanks(false);
@@ -376,7 +365,7 @@ function Dashboard() {
         setWithdrawalStep(3);
       } catch (requestError) {
         setWalletActionError(requestError instanceof TypeError
-          ? 'We could not reach GWIC. Check your connection and try again.'
+          ? 'We could not reach Kalma Capital. Check your connection and try again.'
           : requestError.message);
       } finally {
         setIsWalletActionPending(false);
@@ -419,7 +408,7 @@ function Dashboard() {
       await loadDashboard();
     } catch (requestError) {
       setWalletActionError(requestError instanceof TypeError
-        ? 'We could not reach GWIC. Check your connection and try again.'
+        ? 'We could not reach Kalma Capital. Check your connection and try again.'
         : requestError.message);
     } finally {
       setIsWalletActionPending(false);
@@ -447,7 +436,7 @@ function Dashboard() {
     return (
       <div className="dashboard-loading-shell">
         <div className="dashboard-loading-card">
-          <DashboardLogo className="dashboard-loading-logo" />
+          <BrandMark className="dashboard-loading-logo" />
           <p>Loading your secure dashboard…</p>
         </div>
       </div>
@@ -458,7 +447,7 @@ function Dashboard() {
     return (
       <div className="dashboard-loading-shell">
         <div className="dashboard-loading-card dashboard-error-card" role="alert">
-          <DashboardLogo className="dashboard-loading-logo" />
+          <BrandMark className="dashboard-loading-logo" />
           <p>{error || 'Your dashboard is unavailable right now.'}</p>
           <button className="dashboard-button" onClick={loadDashboard} type="button">Try again</button>
         </div>
@@ -497,9 +486,9 @@ function Dashboard() {
   return (
     <div className="dashboard-app" id="dashboard-top">
       <header className="dashboard-header">
-        <Link className="dashboard-brand" to="/" aria-label="GWIC home">
-          <DashboardLogo className="dashboard-brand-mark" />
-          <span><strong>GWIC</strong><small>GrowWithCore</small></span>
+        <Link className="dashboard-brand" to="/" aria-label="Kalma Capital home">
+          <BrandMark className="dashboard-brand-mark" />
+          <span><strong>KALMA CAPITAL</strong><small>Powered by GWIC</small></span>
         </Link>
         <nav className="desktop-dashboard-nav" aria-label="Dashboard navigation">
           {navigation.map((item) => (
@@ -771,7 +760,7 @@ function Dashboard() {
                     </div>
                     <p className="withdrawal-security-note">For your security, confirm with your password. Your bank details are checked again before payout.</p>
                     <label>
-                      GWIC password
+                      Kalma Capital password
                       <input autoComplete="current-password" name="withdrawal-password" required type="password" />
                     </label>
                     <button className="withdrawal-back-button" onClick={() => { setWithdrawalStep(2); setVerifiedBankAccount(null); setWithdrawalRequestKey(''); }} type="button">Back to bank details</button>
@@ -873,7 +862,7 @@ function Dashboard() {
                   <span className={`activity-icon ${item.type === 'investment' ? 'is-investment' : ''}`}><Icon name={item.type === 'investment' ? 'invest' : 'portfolio'} /></span>
                   <div className="activity-description">
                     <strong>{item.description}</strong>
-                    <small>{item.source || 'GWIC account'}</small>
+                    <small>{item.source || 'Kalma Capital account'}</small>
                   </div>
                   <div className="activity-amount">
                     <strong>{item.transactionType === 'withdrawal' ? '−' : item.transactionType === 'deposit' ? '+' : ''}{displayAmount(item.amount)}</strong>

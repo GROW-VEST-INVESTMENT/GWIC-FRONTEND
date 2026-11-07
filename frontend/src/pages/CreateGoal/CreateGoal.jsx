@@ -132,7 +132,7 @@ function CreateGoal() {
       });
     } catch (requestError) {
       setError(requestError instanceof TypeError
-        ? 'We could not reach GWIC. Check your connection and try again.'
+        ? 'We could not reach Kalma Capital. Check your connection and try again.'
         : requestError.message);
     } finally {
       setIsSubmitting(false);
@@ -145,9 +145,9 @@ function CreateGoal() {
         <Link aria-label="Back to dashboard" className="create-goal-back" to="/dashboard">
           <GoalIcon name="back" />
         </Link>
-        <Link aria-label="GWIC home" className="create-goal-brand" to="/dashboard">
+        <Link aria-label="Kalma Capital home" className="create-goal-brand" to="/dashboard">
           <BrandMark className="create-goal-brand-mark" />
-          <span><strong>GWIC</strong><small>GrowWithCore</small></span>
+          <span><strong>KALMA CAPITAL</strong><small>Powered by GWIC</small></span>
         </Link>
         <div className="create-goal-header-actions">
           <button aria-label="Notifications are not available yet" className="create-goal-header-icon" disabled type="button">
@@ -306,7 +306,7 @@ function CreateGoal() {
               </select>
             </label>
           </div>
-          <p className="create-goal-disclosure">Contributions are manual. GWIC will not automatically debit your wallet.</p>
+          <p className="create-goal-disclosure">Contributions are manual. Kalma Capital will not automatically debit your wallet.</p>
         </section>
 
         <section aria-label="Goal summary" className="create-goal-summary">
