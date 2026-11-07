@@ -52,7 +52,7 @@ function SavingsGoals() {
       } catch (requestError) {
         if (isActive) {
           setError(requestError instanceof TypeError
-            ? 'We could not reach GWIC. Check your connection and try again.'
+            ? 'We could not reach Kalma Capital. Check your connection and try again.'
             : requestError.message);
         }
       } finally {

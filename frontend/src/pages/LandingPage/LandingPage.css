@@ -688,7 +688,7 @@
 }
 
 .hero .brand-copy strong {
-  color: #fff;
+  color: #D7BA6C;
   font-size: 2.8rem;
   font-weight: 850;
   line-height: 0.9;
@@ -940,6 +940,7 @@
 }
 
 .dashboard-brand strong {
+  color: #D7BA6C;
   font-size: 1.05rem;
   line-height: 1;
 }
@@ -1550,10 +1551,6 @@
     line-height: 1.04;
   }
 
-  .hero-copy h1 span {
-    white-space: nowrap;
-  }
-
   .hero-copy p {
     margin-top: 15px;
     font-size: clamp(0.79rem, 3.2vw, 0.92rem);
@@ -1934,6 +1931,7 @@
 }
 
 .footer-brand strong {
+  color: #D7BA6C;
   font-size: 1.45rem;
   font-weight: 850;
   line-height: 1;
@@ -1953,6 +1951,15 @@
   color: rgba(239, 255, 244, 0.7);
   font-size: 0.87rem;
   line-height: 1.5;
+}
+
+.footer-brand-block > .footer-contact {
+  margin-top: 8px;
+}
+
+.footer-contact a {
+  color: #a1e968;
+  text-underline-offset: 2px;
 }
 
 .footer-nav {

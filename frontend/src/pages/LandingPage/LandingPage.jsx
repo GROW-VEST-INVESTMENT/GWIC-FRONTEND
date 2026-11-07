@@ -42,7 +42,7 @@ function FeatureIcon({ name }) {
 
 function DashboardPreview() {
   return (
-    <div className="dashboard-scene" aria-label="GWIC account dashboard preview">
+    <div className="dashboard-scene" aria-label="Kalma Capital account dashboard preview">
       <span className="scene-leaf scene-leaf-left animate-[foliage-sway_5.4s_ease-in-out_infinite]" aria-hidden="true" />
       <span className="scene-leaf scene-leaf-right animate-[foliage-sway_5.4s_ease-in-out_infinite]" aria-hidden="true" />
       <span className="scene-leaf scene-leaf-back animate-[foliage-sway_5.4s_ease-in-out_infinite]" aria-hidden="true" />
@@ -56,7 +56,7 @@ function DashboardPreview() {
           </div>
           <div className="dashboard-brand">
             <BrandMark />
-            <div><strong>GWIC</strong><small>GrowWithCore</small></div>
+            <div><strong>KALMA CAPITAL</strong><small>Powered by GWIC</small></div>
           </div>
           <div className="balance-label">Example wallet balance</div>
           <div className="balance-amount">₦750,432.50</div>
@@ -92,9 +92,9 @@ function LandingPage() {
         <div className="hero-landscape" aria-hidden="true"><span className="stone stone-back" /><span className="stone stone-front" /><span className="leaf leaf-one" /><span className="leaf leaf-two" /><span className="leaf leaf-three" /></div>
         <div className="hero-inner">
           <header className="site-header">
-            <a className="brand" href="#top" aria-label="GWIC home">
+            <a className="brand" href="#top" aria-label="Kalma Capital home">
               <BrandMark />
-              <span className="brand-copy"><strong>GWIC</strong><small>GrowWithCore</small></span>
+              <span className="brand-copy"><strong>KALMA CAPITAL</strong><small>Powered by GWIC</small></span>
             </a>
             <nav className="top-nav" aria-label="Main navigation">
               <a href="#core-lock">Save</a><span>·</span><a href="#equity-core">Invest</a><span>·</span><a href="#benefits">Grow</a>
@@ -106,7 +106,7 @@ function LandingPage() {
               <div className="hero-copy">
                 <h1>Your Goals.<br />Our Core.<br /><span>Plan with purpose.</span></h1>
                 <p>Set savings goals, manage wallet activity, and explore upcoming savings and investing products. Product access depends on availability and final terms.</p>
-                <div className="usage-guide flex w-fit flex-wrap items-center gap-[clamp(3px,1vw,13px)]" aria-label="How GWIC works">
+                <div className="usage-guide flex w-fit flex-wrap items-center gap-[clamp(3px,1vw,13px)]" aria-label="How Kalma Capital works">
                   <span className="guide-step inline-flex items-center gap-[7px] animate-[guide-step_8.4s_ease-in-out_infinite]"><b>01</b> Set a goal</span>
                   <span className="guide-arrow" aria-hidden="true">→</span>
                   <span className="guide-step inline-flex items-center gap-[7px] [animation-delay:2.8s] animate-[guide-step_8.4s_ease-in-out_infinite]"><b>02</b> Review options</span>
@@ -133,7 +133,7 @@ function LandingPage() {
             ))}
           </section>
 
-          <section className="feature-grid" aria-label="GWIC products">
+          <section className="feature-grid" aria-label="Kalma Capital products">
             {products.map((product) => (
               <article className="feature-card" id={product.title === 'Core Lock' ? 'core-lock' : 'equity-core'} key={product.title}>
                 <div className="feature-icon"><FeatureIcon name={product.icon} /></div>
@@ -172,7 +172,7 @@ function LandingPage() {
         </div>
         <div className="faq-list">
           <details>
-            <summary>What can I use on GWIC today?</summary>
+            <summary>What can I use on Kalma Capital today?</summary>
             <p>You can create an account, set savings goals, and manage wallet activity. Core Lock plans and Equity Core stock investing are not currently available. We’ll share their terms and availability before they launch.</p>
           </details>
           <details>
@@ -189,15 +189,16 @@ function LandingPage() {
       <footer className="site-footer">
         <div className="site-footer-inner">
           <div className="footer-brand-block">
-            <Link className="footer-brand" to="/" aria-label="GWIC home">
+            <Link className="footer-brand" to="/" aria-label="Kalma Capital home">
               <BrandMark />
-              <span><strong>GWIC</strong><small>GROW WITH CORE</small></span>
+              <span><strong>KALMA CAPITAL</strong><small>Powered by GWIC · Grow with Core</small></span>
             </Link>
             <p>Set financial goals, manage wallet activity, and learn about products as they become available.</p>
+            <p className="footer-contact">Need help? <a href="mailto:support@kalmacapital.com">support@kalmacapital.com</a></p>
           </div>
-          <nav className="footer-nav" aria-label="Explore GWIC">
+          <nav className="footer-nav" aria-label="Explore Kalma Capital">
             <strong>Explore</strong>
-            <a href="#benefits">Why GWIC</a>
+            <a href="#benefits">Why Kalma Capital</a>
             <a href="#core-lock">Core Lock</a>
             <a href="#equity-core">Equity Core</a>
           </nav>
@@ -210,8 +211,8 @@ function LandingPage() {
             Product availability, fees, withdrawal terms, and investment risks depend on the final products and partners. Investment values can go down as well as up.
           </p>
           <div className="footer-bottom">
-            <span>© {new Date().getFullYear()} GROW WITH CORE</span>
-            <span>Think long term. Grow with Core.</span>
+            <span>© {new Date().getFullYear()} KALMA CAPITAL</span>
+            <span>Powered by GWIC · Grow with Core</span>
           </div>
         </div>
       </footer>

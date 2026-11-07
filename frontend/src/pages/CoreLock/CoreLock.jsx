@@ -39,15 +39,7 @@ function Icon({ name, className = '' }) {
 }
 
 function BrandMark() {
-  return (
-    <img
-      src="/gwic-logo-v2.png"
-      alt="GWIC logo"
-      className="core-lock-brand-mark"
-      loading="eager"
-      decoding="async"
-    />
-  );
+  return <img alt="" aria-hidden="true" className="core-lock-brand-mark" src="/brand/kalma-capital-mark.png" />;
 }
 
 function VaultIllustration() {
@@ -159,7 +151,7 @@ function CoreLock() {
       } catch (requestError) {
         if (isActive) {
           setError(requestError instanceof TypeError
-            ? 'We could not reach GWIC. Check your connection and try again.'
+            ? 'We could not reach Kalma Capital. Check your connection and try again.'
             : requestError.message);
         }
       } finally {
@@ -201,7 +193,7 @@ function CoreLock() {
       await loadCoreData();
     } catch (requestError) {
       setError(requestError instanceof TypeError
-        ? 'We could not reach GWIC. Check your connection and try again.'
+        ? 'We could not reach Kalma Capital. Check your connection and try again.'
         : requestError.message);
     } finally {
       setIsSubmittingPlan(false);
@@ -241,7 +233,7 @@ function CoreLock() {
       await loadCoreData();
     } catch (requestError) {
       setError(requestError instanceof TypeError
-        ? 'We could not reach GWIC. Check your connection and try again.'
+        ? 'We could not reach Kalma Capital. Check your connection and try again.'
         : requestError.message);
     } finally {
       setLiquidatingPlanId('');
@@ -292,9 +284,9 @@ function CoreLock() {
     <div className="core-lock-page">
       <header className="core-lock-header">
         <Link aria-label="Back to dashboard" className="core-lock-back" to="/dashboard"><Icon name="arrowLeft" /></Link>
-        <Link aria-label="GWIC home" className="core-lock-brand" to="/dashboard">
+        <Link aria-label="Kalma Capital home" className="core-lock-brand" to="/dashboard">
           <BrandMark />
-          <span><strong>GWIC</strong><small>GrowWithCore</small></span>
+          <span><strong>KALMA CAPITAL</strong><small>Powered by GWIC</small></span>
         </Link>
         <nav className="core-lock-desktop-nav" aria-label="Account navigation">
           <Link to="/dashboard"><Icon name="home" /> Home</Link>

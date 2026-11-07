@@ -119,9 +119,9 @@ function AccountAccess() {
   return (
     <div className="access-page">
       <header className="access-header">
-        <Link className="access-brand" to="/" aria-label="GWIC home">
+        <Link className="access-brand" to="/" aria-label="Kalma Capital home">
           <BrandMark className="access-brand-mark" />
-          <span><strong>GWIC</strong><small>GROW WITH CORE</small></span>
+          <span><strong>KALMA CAPITAL</strong><small>Powered by GWIC · Grow with Core</small></span>
         </Link>
         <Link className="access-back" to="/">Back to home</Link>
       </header>
@@ -135,14 +135,14 @@ function AccountAccess() {
             {isForgotPassword
               ? 'Password recovery'
               : isLogin
-                ? 'Log in to GWIC'
+                ? 'Log in to Kalma Capital'
                 : 'Start with a stronger core.'}
           </h1>
           <p className="access-intro">
             {isForgotPassword
               ? 'We want to help you get back into your account safely.'
               : isLogin
-                ? 'Access your GWIC account and continue where you left off.'
+                ? 'Access your Kalma Capital account and continue where you left off.'
                 : 'Create your profile, tell us what you’re working toward, and explore the products that may fit your plans.'}
           </p>
 
@@ -151,7 +151,7 @@ function AccountAccess() {
               <span className="recovery-icon" aria-hidden="true">i</span>
               <div>
                 <strong>Self-serve password reset isn’t available yet.</strong>
-                <p>GWIC can’t send a reset link right now. No changes have been made to your account.</p>
+                <p>Kalma Capital can’t send a reset link right now. No changes have been made to your account.</p>
               </div>
               <Link
                 className="access-submit recovery-login"
@@ -345,7 +345,7 @@ function AccountAccess() {
             {isForgotPassword
               ? 'Remember your password?'
               : isLogin
-                ? 'New to GWIC?'
+                ? 'New to Kalma Capital?'
                 : 'Already have an account?'}{' '}
             <Link to={isForgotPassword || !isLogin ? '/login' : '/get-started'}>
               {isForgotPassword ? 'Log in' : isLogin ? 'Create an account' : 'Log in'}
@@ -354,7 +354,7 @@ function AccountAccess() {
         </section>
 
         <aside className="access-aside">
-          <span className="aside-eyebrow">GROW WITH CORE</span>
+          <span className="aside-eyebrow">POWERED BY GWIC · GROW WITH CORE</span>
           <h2>Saving and investing, with more intention.</h2>
           <p>Start by understanding the two proposed product paths. You can review the terms and risks before making any financial decision.</p>
 
