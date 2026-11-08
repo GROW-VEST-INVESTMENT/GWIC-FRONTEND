@@ -23,6 +23,12 @@ const { handlePaystackWebhook } = require('./controllers/walletController');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const officialFrontendOrigins = [
+  'https://kalmacapital.com',
+  'https://www.kalmacapital.com',
+  'https://kalmacapital.com.ng',
+  'https://www.kalmacapital.com.ng',
+];
 const configuredFrontendOrigins = [
   process.env.FRONTEND_URL,
   process.env.ADMIN_URL,
@@ -51,6 +57,7 @@ const getCookieOptions = () => ({
   maxAge: 60 * 60 * 1000,
 });
 const allowedOrigins = [
+  ...officialFrontendOrigins,
   ...configuredFrontendOrigins,
   ...(process.env.NODE_ENV !== 'production'
     ? ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:4173', 'http://127.0.0.1:4173']
@@ -59,25 +66,7 @@ const allowedOrigins = [
 
 const isAllowedOrigin = (origin) => {
   if (!origin) return true;
-
-  const normalizedOrigin = origin.trim();
-  if (allowedOrigins.includes(normalizedOrigin)) return true;
-
-  try {
-    const { hostname, protocol } = new URL(normalizedOrigin);
-    const host = hostname.toLowerCase();
-
-    if (protocol !== 'http:' && protocol !== 'https:') return false;
-    if (host === 'localhost' || host === '127.0.0.1') return true;
-    if (host.endsWith('.vercel.app')) return true;
-
-    const isPrivateIp = /^(10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3})$/.test(host);
-    const isNumericIp = /^\d{1,3}(?:\.\d{1,3}){3}$/.test(host);
-
-    return isPrivateIp || isNumericIp;
-  } catch {
-    return false;
-  }
+  return allowedOrigins.includes(origin.trim());
 };
 
 app.use(cors({
@@ -99,7 +88,7 @@ app.use('/api/notifications', notificationsRoutes);
 
 app.get('/', (req, res) => {
   res.json({
-    message: 'GWIC Backend API is running.',
+    message: 'Kalma Capital Backend API is running.',
     health: '/api/health',
   });
 });
@@ -203,7 +192,7 @@ app.post('/api/auth/login', async (req, res, next) => {
     const isConfiguredAdminLogin = configuredAdminEmail && normalizedEmail === configuredAdminEmail && configuredAdminPassword && password === configuredAdminPassword;
 
     if (user && isConfiguredAdminLogin) {
-      user.name = (process.env.ADMIN_NAME || user.name || 'GWIC General Manager').trim() || user.name;
+      user.name = (process.env.ADMIN_NAME || user.name || 'Kalma Capital Administrator').trim() || user.name;
       user.role = 'super_admin';
       user.status = 'active';
       user.isKycVerified = true;
@@ -411,7 +400,7 @@ app.use((error, req, res, next) => {
 async function ensureDefaultAdminUser() {
   const adminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
   const adminPassword = (process.env.ADMIN_PASSWORD || '').trim();
-  const adminName = (process.env.ADMIN_NAME || 'GWIC General Manager').trim();
+  const adminName = (process.env.ADMIN_NAME || 'Kalma Capital Administrator').trim();
 
   if (!adminEmail || !adminPassword) {
     console.log('Admin bootstrap skipped: ADMIN_EMAIL and ADMIN_PASSWORD are not configured.');

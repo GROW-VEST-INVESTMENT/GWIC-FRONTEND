@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "GWIC Backend Server",
+  "description": "Kalma Capital Backend Server",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

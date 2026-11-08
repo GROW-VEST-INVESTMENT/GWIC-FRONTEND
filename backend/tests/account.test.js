@@ -7,6 +7,7 @@ const {
   createSupportRequest,
   createLinkedBank,
   uploadAccountPhoto,
+  getAbout,
 } = require('../controllers/accountController');
 const requireAccountReviewer = require('../middleware/requireAccountReviewer');
 const User = require('../models/User');
@@ -27,6 +28,14 @@ function makeResponse() {
     },
   };
 }
+
+test('about information identifies Kalma Capital and its parent company', () => {
+  const response = makeResponse();
+  getAbout({}, response);
+  assert.equal(response.body.name, 'Kalma Capital');
+  assert.equal(response.body.shortName, 'KC');
+  assert.equal(response.body.parentCompany, 'GWIC');
+});
 
 test('profile updates cannot change the account name', async () => {
   const response = makeResponse();

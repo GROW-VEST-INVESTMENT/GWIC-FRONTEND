@@ -1,4 +1,4 @@
-# GWIC backend
+# Kalma Capital backend
 
 ## Paystack wallet setup
 
@@ -10,7 +10,7 @@ Deposits use Paystack's hosted checkout: the backend initializes the transaction
 
 For the local frontend, `frontend/.env.local` may set `VITE_API_URL=http://localhost:5000`; Vite uses this only as its development API proxy. No Paystack key belongs in frontend environment variables for the hosted-checkout flow.
 
-On Render, configure `MONGODB_URI`, a unique `JWT_SECRET` of at least 32 characters, `PAYSTACK_SECRET_KEY`, and `FRONTEND_URL=https://gwic-frontend.vercel.app`. Keep `PAYSTACK_SECRET_KEY` on the backend and use the test key while sandbox testing. Render supplies `PORT`; `NODE_ENV` should be `production`. Set `CORE_SAVINGS_ENABLED=false` unless the product has been formally approved for activation. `CORS_ORIGINS`, `ACCOUNT_REVIEW_TOKEN`, and the three Cloudinary variables are optional and should only be set when those features are in use. See `backend/.env.example` for the variable list.
+On Render, configure `MONGODB_URI`, a unique `JWT_SECRET` of at least 32 characters, `PAYSTACK_SECRET_KEY`, and `FRONTEND_URL=https://kalmacapital.com`. Set `ADMIN_URL` to the exact admin frontend origin when applicable. The Kalma Capital production domains are allowed by default; add any other trusted frontend or preview origin explicitly to `CORS_ORIGINS`. Never use a default or shared admin password. Keep `PAYSTACK_SECRET_KEY` on the backend and use the test key while sandbox testing. Render supplies `PORT`; `NODE_ENV` should be `production`. Set `CORE_SAVINGS_ENABLED=false` unless the product has been formally approved for activation. `ACCOUNT_REVIEW_TOKEN` and the three Cloudinary variables are optional and should only be set when those features are in use. See `backend/.env.example` for the variable list.
 
 Configure this webhook URL in the Paystack dashboard:
 
@@ -40,7 +40,7 @@ The API starts a UTC-midnight scheduler after connecting to MongoDB; it also run
 
 ## Account settings and support
 
-Signup requires at least a first and last name. Tell users to enter their full legal name as it appears on bank and identity records: bank withdrawals are rejected when the verified bank-account holder name does not match the GWIC profile name. The name is immutable through the regular profile endpoint; users can submit a support request for a correction.
+Signup requires at least a first and last name. Tell users to enter their full legal name as it appears on bank and identity records: bank withdrawals are rejected when the verified bank-account holder name does not match the Kalma Capital profile name. The name is immutable through the regular profile endpoint; users can submit a support request for a correction.
 
 Optional profile photos are uploaded through the authenticated `/api/account/profile/photo` route and stored as authenticated Cloudinary images. Configure `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` in the backend environment. Only PNG, JPEG, and WebP files under 2 MB are accepted. The API returns a signed image URL; photos are not identity evidence and must not be used for face verification. `DELETE /api/account/profile/photo` removes the current profile photo.
 
@@ -51,7 +51,7 @@ The authenticated `/api/account` routes power the More page:
 - `GET/PATCH /notifications` persists the user's choices. Email and push delivery are not integrated yet; saving a choice does not send a notification.
 - `PATCH /password` verifies the current password, changes it, invalidates prior sessions, and clears the current session cookie.
 - `GET/POST /verification` reads or submits a manual verification request. It collects legal name and date of birth, not BVN or identity-document numbers. A request is not proof of verification; a reviewer must validate it separately before account KYC status changes.
-- `GET/POST /banks`, `PATCH /banks/:bankId/default`, and `DELETE /banks/:bankId` manage up to three verified payout recipients. Linking requires Paystack configuration, password confirmation, and a holder name matching the GWIC profile. Plain account numbers are not stored; only masked details and a provider recipient reference are retained. A linked account can be selected for wallet withdrawals.
+- `GET/POST /banks`, `PATCH /banks/:bankId/default`, and `DELETE /banks/:bankId` manage up to three verified payout recipients. Linking requires Paystack configuration, password confirmation, and a holder name matching the Kalma Capital profile. Plain account numbers are not stored; only masked details and a provider recipient reference are retained. A linked account can be selected for wallet withdrawals.
 - `GET/POST /support` lists and creates support tickets. Ticket handling is manual; no email delivery or staff dashboard is connected.
 - `GET /about` returns the product information shown in More.
 
