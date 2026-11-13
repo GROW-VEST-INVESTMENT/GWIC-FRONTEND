@@ -8,6 +8,7 @@
     "dev": "nodemon server.js",
     "core-savings:daily": "node scripts/runCoreSavingsDaily.js",
     "wallet:reconcile-opening-balances": "node scripts/backfillWalletOpeningBalances.js",
+    "email:test": "node scripts/sendResendTestEmail.js",
     "test": "node --test"
   },
   "keywords": [],

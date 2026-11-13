@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const Notification = require('../models/Notification');
 const requireAuth = require('../middleware/requireAuth');
 
@@ -33,6 +34,38 @@ router.get('/', async (req, res, next) => {
         createdAt: notification.createdAt,
         read: Boolean(notification.read),
       })),
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.patch('/read-all', async (req, res, next) => {
+  try {
+    const result = await Notification.updateMany(
+      { userId: req.user.id, read: false },
+      { $set: { read: true } },
+    );
+    return res.json({ message: 'Notifications marked as read.', updated: result.modifiedCount });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.patch('/:notificationId/read', async (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.notificationId)) {
+    return res.status(404).json({ message: 'Notification not found.' });
+  }
+  try {
+    const notification = await Notification.findOneAndUpdate(
+      { _id: req.params.notificationId, userId: req.user.id },
+      { $set: { read: true } },
+      { returnDocument: 'after' },
+    ).lean();
+    if (!notification) return res.status(404).json({ message: 'Notification not found.' });
+    return res.json({
+      message: 'Notification marked as read.',
+      notification: { id: notification._id.toString(), read: Boolean(notification.read) },
     });
   } catch (error) {
     return next(error);

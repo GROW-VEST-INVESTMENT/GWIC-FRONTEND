@@ -26,6 +26,12 @@ Paystack can require approval for transfers depending on the account's transfer 
 
 The authenticated `GET /api/wallet/transactions?page=1&type=all` endpoint returns wallet activity newest-first in pages of 20. `type` accepts `all`, `deposit`, or `withdrawal`; the response includes `total` and `hasMore` for pagination.
 
+### Customer notification inbox and delivery
+
+The authenticated `GET /api/notifications` endpoint returns the signed-in customer's in-app inbox. The customer app can mark one item read with `PATCH /api/notifications/:notificationId/read` or all current items read with `PATCH /api/notifications/read-all`. These records are scoped to the authenticated user. Wallet deposit confirmation creates an in-app notification.
+
+`emailAccountUpdates`, `emailSecurityAlerts`, `pushNotifications`, and the selected notification sound are persisted as customer preferences. Resend sends account welcome, confirmed deposit, and password-change emails when the matching email preference is enabled. For a restricted test, set `RESEND_API_KEY` and `RESEND_TEST_TO` in this backend's ignored `.env` file and run `npm run email:test`. Set `RESEND_TEST_MODE=true` only for local testing to route app-triggered mail to Resend's allowed test recipient; it is rejected in production and should be disabled afterward. The default `onboarding@resend.dev` sender is not for unrestricted customer delivery; production sending requires a verified domain and `RESEND_FROM_EMAIL` set to an address on that domain. Keep the key only in backend environment settings. Delivery failures are logged and do not reverse a successful account or wallet action. The mobile app plays its selected local sound for newly received inbox items while foregrounded; OS push delivery and background sound are not implemented. The admin panel does not configure providers, but could later manage approved templates or delivery status without exposing credentials.
+
 The authenticated `GET /api/portfolio` endpoint summarizes a user's current wallet balance, active Core savings plans, and balances saved toward user-created savings goals. Savings-goal balances are included in the portfolio total and reported separately from the available wallet balance. The endpoint reports current account allocation and accrued yield only; historical performance and securities holdings are not represented because those products and market-data feeds are not integrated.
 
 ## Core savings operations
@@ -52,7 +58,16 @@ The authenticated `/api/account` routes power the More page:
 - `PATCH /password` verifies the current password, changes it, invalidates prior sessions, and clears the current session cookie.
 - `GET/POST /verification` reads or submits a manual verification request. It collects legal name and date of birth, not BVN or identity-document numbers. A request is not proof of verification; a reviewer must validate it separately before account KYC status changes.
 - `GET/POST /banks`, `PATCH /banks/:bankId/default`, and `DELETE /banks/:bankId` manage up to three verified payout recipients. Linking requires Paystack configuration, password confirmation, and a holder name matching the Kalma Capital profile. Plain account numbers are not stored; only masked details and a provider recipient reference are retained. A linked account can be selected for wallet withdrawals.
-- `GET/POST /support` lists and creates support tickets. Ticket handling is manual; no email delivery or staff dashboard is connected.
+- `GET/POST /support` lists and creates support tickets. Staff can update ticket status through the authenticated admin operations API; email delivery is not integrated.
 - `GET /about` returns the product information shown in More.
 
-Configure a long, unique `ACCOUNT_REVIEW_TOKEN` in the backend deployment environment to enable staff operations. The token must only be given to trusted server-side review tooling and must never be exposed in frontend code. With no token configured, review routes return `503`. The protected `/api/account-review/verifications` and `/support` routes list pending items; `PATCH /verifications/:requestId` accepts a `verified` or `rejected` decision, and `PATCH /support/:requestId` updates a ticket status. These APIs are not a staff UI and do not replace a secure evidence-review workflow. Configure and rotate the token outside source control.
+The admin app uses the HttpOnly login session and backend-enforced `admin`/`super_admin` roles; it does not use or expose `ACCOUNT_REVIEW_TOKEN`. Configure `ADMIN_URL` as the exact deployed admin origin. New admin writes also require an approved `Origin`, with production origins taken from `ADMIN_URL` and `CORS_ORIGINS`.
+
+The authenticated staff operations routes are under `/api/admin/operations`:
+
+- `GET /wallets` returns current wallet totals and up to 100 recent wallet records; wallet changes are not exposed.
+- `GET /verification-requests?status=pending` lists submitted requests and status counts. `PATCH /verification-requests/:requestId` accepts `verified` or `rejected` only with an evidence-review confirmation and staff note. The request stores legal name and date of birth, not identity documents; staff must verify evidence through the approved secure process before deciding.
+- `GET /support-requests?status=all` lists customer tickets. `PATCH /support-requests/:requestId` updates the status with a required staff note.
+- `GET /audit-logs` returns the latest KYC and support actions. Review decisions, notes, status changes, and audit entries are written together in a MongoDB transaction.
+
+The legacy `/api/account-review` token routes remain available to trusted server-side tooling. Keep `ACCOUNT_REVIEW_TOKEN` out of browser code and rotate it outside source control.

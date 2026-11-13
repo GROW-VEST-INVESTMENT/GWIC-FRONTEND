@@ -17,6 +17,7 @@ const accountPreferencesSchema = new mongoose.Schema(
     hideWalletBalance: { type: Boolean, default: false },
     theme: { type: String, enum: ['system', 'light', 'dark'], default: 'system' },
     language: { type: String, enum: ['en'], default: 'en' },
+    autoLogoutMinutes: { type: Number, enum: [0, 1, 5, 15, 30], default: 15 },
   },
   { _id: false },
 );
@@ -26,6 +27,7 @@ const notificationPreferencesSchema = new mongoose.Schema(
     emailAccountUpdates: { type: Boolean, default: true },
     emailSecurityAlerts: { type: Boolean, default: true },
     pushNotifications: { type: Boolean, default: false },
+    sound: { type: String, enum: ['default', 'chime', 'soft', 'silent'], default: 'default' },
   },
   { _id: false },
 );

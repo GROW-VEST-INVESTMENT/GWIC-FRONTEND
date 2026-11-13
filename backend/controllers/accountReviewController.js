@@ -127,7 +127,7 @@ async function updateSupportRequest(req, res, next) {
           resolvedAt: status === 'resolved' ? new Date() : null,
         },
       },
-      { new: true, runValidators: true },
+      { returnDocument: 'after', runValidators: true },
     ).select('-staffNote');
     if (!request) return res.status(404).json({ message: 'Support request not found.' });
     return res.json({

@@ -28,6 +28,11 @@ test('root endpoint identifies Kalma Capital', async () => {
   assert.match((await response.json()).message, /Kalma Capital/);
 });
 
+test('admin operations require an authenticated session', async () => {
+  const response = await request('/api/admin/operations/wallets');
+  assert.equal(response.status, 401);
+});
+
 test('credentialed CORS accepts official domains and rejects unconfigured Vercel origins', async () => {
   for (const origin of [
     'https://kalmacapital.com',

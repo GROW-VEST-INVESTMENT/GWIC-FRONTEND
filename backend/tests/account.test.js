@@ -3,6 +3,7 @@ const { test } = require('node:test');
 const {
   updateProfile,
   updatePreferences,
+  updateNotificationPreferences,
   createVerificationRequest,
   createSupportRequest,
   createLinkedBank,
@@ -158,9 +159,21 @@ test('account preferences reject unsupported values', async () => {
     { theme: 'neon' },
     { language: 'fr' },
     { isKycVerified: true },
+    { autoLogoutMinutes: 2 },
   ]) {
     const response = makeResponse();
     await updatePreferences({ body }, response, (error) => { throw error; });
+    assert.equal(response.statusCode, 400);
+  }
+});
+
+test('notification preferences reject unsupported sound and delivery values', async () => {
+  for (const body of [
+    { sound: 'alarm' },
+    { pushNotifications: 'true' },
+  ]) {
+    const response = makeResponse();
+    await updateNotificationPreferences({ body }, response, (error) => { throw error; });
     assert.equal(response.statusCode, 400);
   }
 });
