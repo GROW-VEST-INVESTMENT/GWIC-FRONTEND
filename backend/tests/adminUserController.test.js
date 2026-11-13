@@ -3,7 +3,10 @@ const { test } = require('node:test');
 const mongoose = require('mongoose');
 const AdminAuditLog = require('../models/AdminAuditLog');
 const User = require('../models/User');
-const { updateAccountStatus } = require('../controllers/adminUserController');
+const {
+  updateAccountStatus,
+  updateTransactionRestriction,
+} = require('../controllers/adminUserController');
 const requireAuth = require('../middleware/requireAuth');
 const requireTransactionsAllowed = require('../middleware/requireTransactionsAllowed');
 const jwt = require('jsonwebtoken');
@@ -158,4 +161,70 @@ test('transaction restrictions reject new restricted operations', () => {
   assert.equal(passed, false);
   assert.equal(response.statusCode, 403);
   assert.match(response.body.message, /transaction access is restricted/i);
+});
+
+test('restoring transactions clears the restriction and records the admin reason', async () => {
+  const originalStartSession = mongoose.startSession;
+  const originalFindById = User.findById;
+  const originalAuditSave = AdminAuditLog.prototype.save;
+  const targetId = new mongoose.Types.ObjectId();
+  const actorId = new mongoose.Types.ObjectId();
+  const user = {
+    _id: targetId,
+    id: targetId.toString(),
+    role: 'user',
+    transactionRestricted: true,
+    transactionRestrictionReason: 'Pending investigation',
+    transactionRestrictedAt: new Date('2026-01-01T00:00:00.000Z'),
+    transactionRestrictedBy: new mongoose.Types.ObjectId(),
+    async save() {},
+  };
+  let auditEntry;
+
+  mongoose.startSession = async () => ({
+    withTransaction: async (operation) => operation(),
+    async endSession() {},
+  });
+  User.findById = () => ({ session: () => user });
+  AdminAuditLog.prototype.save = async function save() {
+    auditEntry = this;
+    return this;
+  };
+
+  try {
+    const response = makeResponse();
+    await updateTransactionRestriction(
+      {
+        body: { restricted: false, reason: 'Investigation completed' },
+        params: { userId: targetId.toString() },
+        user: { _id: actorId },
+      },
+      response,
+      (error) => { throw error; },
+    );
+
+    assert.equal(response.statusCode, 200);
+    assert.equal(user.transactionRestricted, false);
+    assert.equal(user.transactionRestrictionReason, '');
+    assert.equal(user.transactionRestrictedAt, null);
+    assert.equal(user.transactionRestrictedBy, null);
+    assert.equal(response.body.user.transactionRestricted, false);
+    assert.match(response.body.message, /restored/i);
+    assert.equal(auditEntry.action, 'user.transaction_restriction_updated');
+    assert.equal(auditEntry.previousStatus, 'restricted');
+    assert.equal(auditEntry.nextStatus, 'available');
+    assert.equal(auditEntry.note, 'Investigation completed');
+
+    let passed = false;
+    requireTransactionsAllowed(
+      { user: { transactionRestricted: user.transactionRestricted } },
+      makeResponse(),
+      () => { passed = true; },
+    );
+    assert.equal(passed, true);
+  } finally {
+    mongoose.startSession = originalStartSession;
+    User.findById = originalFindById;
+    AdminAuditLog.prototype.save = originalAuditSave;
+  }
 });
