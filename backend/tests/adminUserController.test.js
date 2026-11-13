@@ -49,7 +49,7 @@ test('freezing a user records the reason and invalidates existing sessions', asy
     _id: targetId,
     id: targetId.toString(),
     role: 'user',
-    status: 'active',
+    status: 'pending',
     sessionVersion: 3,
     async save() {},
   };
@@ -79,11 +79,40 @@ test('freezing a user records the reason and invalidates existing sessions', asy
 
     assert.equal(response.statusCode, 200);
     assert.equal(user.status, 'suspended');
+    assert.equal(user.statusBeforeSuspension, 'pending');
     assert.equal(user.sessionVersion, 4);
     assert.equal(user.suspensionReason, 'Fraud review requested');
     assert.equal(response.body.user.status, 'suspended');
     assert.equal(auditEntry.action, 'user.account_status_updated');
     assert.equal(auditEntry.note, 'Fraud review requested');
+
+    const restoreResponse = makeResponse();
+    await updateAccountStatus(
+      {
+        body: { status: 'active', reason: 'Review complete' },
+        params: { userId: targetId.toString() },
+        user: { _id: actorId },
+      },
+      restoreResponse,
+      (error) => { throw error; },
+    );
+    assert.equal(restoreResponse.statusCode, 200);
+    assert.equal(user.status, 'pending');
+    assert.equal(user.sessionVersion, 5);
+    assert.equal(auditEntry.nextStatus, 'pending');
+
+    const invalidRestoreResponse = makeResponse();
+    let invalidRestoreError;
+    await updateAccountStatus(
+      {
+        body: { status: 'active', reason: 'Premature activation' },
+        params: { userId: targetId.toString() },
+        user: { _id: actorId },
+      },
+      invalidRestoreResponse,
+      (error) => { invalidRestoreError = error; },
+    );
+    assert.equal(invalidRestoreError.status, 409);
   } finally {
     mongoose.startSession = originalStartSession;
     User.findById = originalFindById;

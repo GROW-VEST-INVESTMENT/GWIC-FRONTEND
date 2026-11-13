@@ -108,6 +108,11 @@ async function updateAccountStatus(req, res, next) {
         error.status = 404;
         throw error;
       }
+      if (status === 'active' && user.status !== 'suspended') {
+        const error = new Error('Only a frozen account can be restored.');
+        error.status = 409;
+        throw error;
+      }
       if (user.status === status) {
         const error = new Error(`Account is already ${status}.`);
         error.status = 409;
