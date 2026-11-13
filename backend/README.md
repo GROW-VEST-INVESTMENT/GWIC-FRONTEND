@@ -20,6 +20,10 @@ https://gwic-backend.onrender.com/api/paystack/webhook
 
 The endpoint verifies Paystack's HMAC signature and handles `charge.success`, `transfer.success`, `transfer.failed`, and `transfer.reversed` events. Keep it publicly reachable over HTTPS.
 
+### Admin account access
+
+The authenticated admin profile endpoint is `GET /api/admin/users/:userId`. Freeze or restore a regular user's account with `PATCH /api/admin/users/:userId/account-status` and `{ "status": "suspended" | "active", "reason": "..." }`. Admin write requests require a trusted admin origin and a reason between 3 and 500 characters. Each change is audit-logged and increments the user's session version; suspended users cannot sign in or use existing authenticated sessions. Freezing does not alter wallet balances or existing investment plans.
+
 Deposits are limited to ₦100–₦1,000,000 per transaction. Wallet funds are credited only after the backend verifies a successful Paystack transaction. Withdrawals require at least ₦100, sufficient confirmed wallet funds, and a resolved Nigerian bank account whose holder name matches the user's profile name (case, spaces, and punctuation ignored). Withdrawals are sent from the business Paystack balance; failed or reversed transfers are returned to the wallet.
 
 Paystack can require approval for transfers depending on the account's transfer security settings. In that case, the withdrawal remains reserved and pending until Paystack reports a final transfer event.

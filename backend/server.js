@@ -11,6 +11,7 @@ const WalletTransaction = require('./models/WalletTransaction');
 const SupportRequest = require('./models/SupportRequest');
 const VerificationRequest = require('./models/VerificationRequest');
 const requireAuth = require('./middleware/requireAuth');
+const adminUserRoutes = require('./routes/adminUserRoutes');
 const adminOperationsRoutes = require('./routes/adminOperationsRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const coreLockRoutes = require('./routes/coreLockRoutes');
@@ -89,6 +90,7 @@ app.use('/api/core-savings', coreSavingsRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/account', accountRoutes);
 app.use('/api/account-review', accountReviewRoutes);
+app.use('/api/admin/users', adminUserRoutes);
 app.use('/api/admin/operations', adminOperationsRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/notifications', notificationsRoutes);
@@ -219,6 +221,9 @@ app.post('/api/auth/login', async (req, res, next) => {
     if (!user || (!passwordMatches && !isConfiguredAdminLogin)) {
       return res.status(401).json({ message: 'Email or password is incorrect.' });
     }
+    if (user.status === 'suspended') {
+      return res.status(403).json({ message: 'This account has been suspended. Please contact support.' });
+    }
 
     const token = jwt.sign(
       { sub: user.id, ver: user.sessionVersion },
@@ -316,7 +321,7 @@ app.get('/api/admin/overview', requireAuth, requireAdmin, async (req, res, next)
 
 app.get('/api/admin/users', requireAuth, requireAdmin, async (req, res, next) => {
   try {
-    const users = await User.find({}).sort({ createdAt: -1 }).select('name email role status isKycVerified product').lean();
+    const users = await User.find({}).sort({ createdAt: -1 }).select('name email role status isKycVerified product transactionRestricted').lean();
     return res.json({ users: users.map((user) => ({
       id: user._id,
       name: user.name,
@@ -325,6 +330,7 @@ app.get('/api/admin/users', requireAuth, requireAdmin, async (req, res, next) =>
       status: user.status || 'active',
       kycVerified: !!user.isKycVerified,
       product: user.product,
+      transactionRestricted: !!user.transactionRestricted,
     })) });
   } catch (error) {
     return next(error);

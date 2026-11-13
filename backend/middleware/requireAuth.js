@@ -17,9 +17,12 @@ async function requireAuth(req, res, next) {
   try {
     const { sub, ver } = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(sub)
-      .select('name email phone role status isKycVerified sessionVersion +profilePhotoPublicId +profilePhotoVersion');
+      .select('name email phone role status isKycVerified sessionVersion transactionRestricted +profilePhotoPublicId +profilePhotoVersion');
     if (!user || user.sessionVersion !== ver) {
       return res.status(401).json({ message: 'Please log in to continue.' });
+    }
+    if (user.status === 'suspended') {
+      return res.status(403).json({ message: 'This account has been suspended. Please contact support.' });
     }
 
     req.user = user;

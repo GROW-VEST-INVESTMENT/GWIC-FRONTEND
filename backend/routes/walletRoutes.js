@@ -1,5 +1,6 @@
 const express = require('express');
 const requireAuth = require('../middleware/requireAuth');
+const requireTransactionsAllowed = require('../middleware/requireTransactionsAllowed');
 const {
   getWallet,
   getWalletTransactions,
@@ -16,9 +17,9 @@ router.use(requireAuth);
 router.get('/transactions', getWalletTransactions);
 router.get('/', getWallet);
 router.get('/banks', getBanks);
-router.post('/deposits', initializeDeposit);
+router.post('/deposits', requireTransactionsAllowed, initializeDeposit);
 router.post('/deposits/verify', verifyDeposit);
-router.post('/withdrawals/resolve', resolveWithdrawalAccount);
-router.post('/withdrawals', createWithdrawal);
+router.post('/withdrawals/resolve', requireTransactionsAllowed, resolveWithdrawalAccount);
+router.post('/withdrawals', requireTransactionsAllowed, createWithdrawal);
 
 module.exports = router;

@@ -1,5 +1,6 @@
 const express = require('express');
 const requireAuth = require('../middleware/requireAuth');
+const requireTransactionsAllowed = require('../middleware/requireTransactionsAllowed');
 const {
   createCoreSavingsPlan,
   getCoreSavings,
@@ -10,7 +11,7 @@ const router = express.Router();
 
 router.use(requireAuth);
 router.get('/', getCoreSavings);
-router.post('/plans', createCoreSavingsPlan);
-router.post('/plans/:planId/liquidate', liquidateCoreSavingsPlan);
+router.post('/plans', requireTransactionsAllowed, createCoreSavingsPlan);
+router.post('/plans/:planId/liquidate', requireTransactionsAllowed, liquidateCoreSavingsPlan);
 
 module.exports = router;

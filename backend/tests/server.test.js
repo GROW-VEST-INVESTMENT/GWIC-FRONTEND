@@ -33,6 +33,11 @@ test('admin operations require an authenticated session', async () => {
   assert.equal(response.status, 401);
 });
 
+test('admin user profiles require an authenticated session', async () => {
+  const response = await request('/api/admin/users/507f1f77bcf86cd799439011');
+  assert.equal(response.status, 401);
+});
+
 test('credentialed CORS accepts official domains and rejects unconfigured Vercel origins', async () => {
   for (const origin of [
     'https://kalmacapital.com',
