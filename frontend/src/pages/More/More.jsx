@@ -5,7 +5,7 @@ import './More.css';
 
 const settings = [
   { id: 'personal', icon: 'person', title: 'Personal Information', description: 'Update your name and phone number.' },
-  { id: 'kyc', icon: 'shield', title: 'KYC & Verification', description: 'Submit and track an account verification request.' },
+  { id: 'kyc', icon: 'shield', title: 'Transaction tier & limits', description: 'View your limits and manage verification for a higher tier.' },
   { id: 'banks', icon: 'bank', title: 'Linked Bank Accounts', description: 'Manage verified accounts for wallet withdrawals.' },
   { id: 'security', icon: 'lock', title: 'Security', description: 'Change your password and protect your account.' },
   { id: 'notifications', icon: 'bell', title: 'Notifications', description: 'Choose how you want to receive account updates.' },
@@ -572,47 +572,6 @@ function More() {
           </div>
         </section>
 
-        {Array.isArray(verification?.tiers) && (() => {
-          const currentTier = verification.tiers.find((tier) => tier.level === verification.currentTier);
-          const targetTierLevel = verification.request?.status === 'pending'
-            ? verification.request.requestedTier
-            : verification.nextTier?.level;
-          const targetTier = verification.tiers.find((tier) => tier.level === targetTierLevel);
-          const formatTierLimit = (amount) => new Intl.NumberFormat('en-NG', {
-            style: 'currency',
-            currency: 'NGN',
-            maximumFractionDigits: 0,
-          }).format(amount || 0);
-          return (
-            <section aria-label="Transaction tier and limits" className="more-tier-summary">
-              <div className="more-tier-current">
-                <span>TRANSACTION TIER</span>
-                <strong>Tier {verification.currentTier ?? 0} · {currentTier?.name}</strong>
-                <small>Deposits: up to {formatTierLimit(currentTier?.deposit?.perTransaction)} per transaction</small>
-                <small>Withdrawals: up to {formatTierLimit(currentTier?.withdrawal?.perTransaction)} per transaction</small>
-              </div>
-              {targetTier && (
-                <div className="more-tier-next">
-                  <span>{verification.request?.status === 'pending' ? 'UNDER REVIEW' : 'NEXT TIER'}</span>
-                  <strong>Tier {targetTier.level} · {targetTier.name}</strong>
-                  {targetTier.requirements?.length > 0 && (
-                    <ul>
-                      {targetTier.requirements.map((requirement) => <li key={requirement}>{requirement}</li>)}
-                    </ul>
-                  )}
-                  <small>
-                    Potential deposit limit: {formatTierLimit(targetTier.deposit?.perTransaction)} per transaction.
-                    Potential withdrawal limit: {formatTierLimit(targetTier.withdrawal?.perTransaction)} per transaction.
-                  </small>
-                </div>
-              )}
-              <button className="more-detail-action" onClick={() => setActivePanel('kyc')} type="button">
-                {verification?.canSubmit ? 'Review verification options' : 'View verification status'}
-              </button>
-            </section>
-          );
-        })()}
-
         {accountError && !activePanel && (
           <div className="more-error" role="alert">
             <span>{accountError}</span>
@@ -701,7 +660,7 @@ function More() {
               )}
               {activePanel === 'kyc' && (
                 <>
-                  <h2 id="more-detail-title">KYC & Verification</h2>
+                  <h2 id="more-detail-title">Transaction tier & limits</h2>
                   {isLoadingAccount
                     ? <p aria-live="polite">Checking your verification status…</p>
                     : !verification
@@ -719,6 +678,48 @@ function More() {
                       </span>
                     </div>}
                   {verification?.notice && <p className="more-form-note">{verification.notice}</p>}
+                  {Array.isArray(verification?.tiers) && (() => {
+                    const currentTier = verification.tiers.find((tier) => tier.level === verification.currentTier);
+                    const targetTierLevel = verification.request?.status === 'pending'
+                      ? verification.request.requestedTier
+                      : verification.nextTier?.level;
+                    const targetTier = verification.tiers.find((tier) => tier.level === targetTierLevel);
+                    const formatTierLimit = (amount) => new Intl.NumberFormat('en-NG', {
+                      style: 'currency',
+                      currency: 'NGN',
+                      maximumFractionDigits: 0,
+                    }).format(amount || 0);
+                    return (
+                      <div className="more-tier-summary">
+                        <div className="more-tier-current">
+                          <span>YOUR CURRENT TIER</span>
+                          <strong>Tier {verification.currentTier ?? 0} · {currentTier?.name}</strong>
+                          <small>Deposits: up to {formatTierLimit(currentTier?.deposit?.perTransaction)} per transaction</small>
+                          <small>Deposit caps: {formatTierLimit(currentTier?.deposit?.perDay)} daily · {formatTierLimit(currentTier?.deposit?.perMonth)} monthly</small>
+                          <small>Withdrawals: up to {formatTierLimit(currentTier?.withdrawal?.perTransaction)} per transaction</small>
+                          <small>Withdrawal caps: {formatTierLimit(currentTier?.withdrawal?.perDay)} daily · {formatTierLimit(currentTier?.withdrawal?.perMonth)} monthly</small>
+                        </div>
+                        {targetTier && (
+                          <div className="more-tier-next">
+                            <span>{verification.request?.status === 'pending' ? 'UNDER REVIEW' : 'NEXT TIER'}</span>
+                            <strong>Tier {targetTier.level} · {targetTier.name}</strong>
+                            {targetTier.requirements?.length > 0 && (
+                              <ul>{targetTier.requirements.map((requirement) => <li key={requirement}>{requirement}</li>)}</ul>
+                            )}
+                            <small>
+                              Deposit caps: {formatTierLimit(targetTier.deposit?.perTransaction)} per transaction, {formatTierLimit(targetTier.deposit?.perDay)} daily, {formatTierLimit(targetTier.deposit?.perMonth)} monthly.
+                              Withdrawal caps: {formatTierLimit(targetTier.withdrawal?.perTransaction)} per transaction, {formatTierLimit(targetTier.withdrawal?.perDay)} daily, {formatTierLimit(targetTier.withdrawal?.perMonth)} monthly.
+                            </small>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                  {verification && !Array.isArray(verification.tiers) && (
+                    <p className="more-form-note" role="alert">
+                      Transaction tier details are unavailable. Use Retry above or try again after the account service reconnects.
+                    </p>
+                  )}
                   {verification?.canSubmit && <form className="more-form" onSubmit={submitVerification}>
                     <label>Legal name<input autoComplete="name" maxLength="100" minLength="2" onChange={(event) => setVerificationForm((current) => ({ ...current, legalName: event.target.value }))} required value={verificationForm.legalName} /></label>
                     <label>Date of birth<input autoComplete="bday" max={new Date().toISOString().slice(0, 10)} onChange={(event) => setVerificationForm((current) => ({ ...current, dateOfBirth: event.target.value }))} required type="date" value={verificationForm.dateOfBirth} /></label>
