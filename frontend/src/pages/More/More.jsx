@@ -98,7 +98,16 @@ function More() {
   const [bankPassword, setBankPassword] = useState('');
   const [bankForm, setBankForm] = useState({ accountNumber: '', bankCode: '', search: '' });
   const [securityForm, setSecurityForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-  const [verificationForm, setVerificationForm] = useState({ legalName: '', dateOfBirth: '', consent: false });
+  const [verificationForm, setVerificationForm] = useState({
+    legalName: '',
+    dateOfBirth: '',
+    addressLine: '',
+    city: '',
+    state: '',
+    occupation: '',
+    sourceOfFundsCategory: '',
+    consent: false,
+  });
   const [supportForm, setSupportForm] = useState({ category: 'account', subject: '', message: '' });
   const [retryKey, setRetryKey] = useState(0);
   const hideBalance = preferences.hideWalletBalance;
@@ -364,7 +373,12 @@ function More() {
         ...current,
         status: result.status,
         canSubmit: false,
-        request: { id: result.requestId, status: result.status, legalName: verificationForm.legalName },
+        request: {
+          id: result.requestId,
+          status: result.status,
+          legalName: verificationForm.legalName,
+          requestedTier: result.requestedTier,
+        },
       }));
       setActionMessage(result.message);
     } catch (requestError) {
@@ -664,11 +678,63 @@ function More() {
                       </span>
                     </div>}
                   {verification?.notice && <p className="more-form-note">{verification.notice}</p>}
+                  {verification?.tiers && (() => {
+                    const currentTier = verification.tiers.find((tier) => tier.level === verification.currentTier);
+                    const targetTierLevel = verification.request?.status === 'pending'
+                      ? verification.request.requestedTier
+                      : verification.nextTier?.level;
+                    const requestedTier = verification.tiers.find((tier) => tier.level === targetTierLevel);
+                    return (
+                      <div className="more-tier-summary">
+                        <div className="more-tier-current">
+                          <span>YOUR CURRENT TIER</span>
+                          <strong>Tier {verification.currentTier} · {currentTier?.name}</strong>
+                          <small>
+                            Deposits: up to {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(currentTier?.deposit.perTransaction || 0)} per transaction
+                          </small>
+                          <small>
+                            Withdrawals: up to {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(currentTier?.withdrawal.perTransaction || 0)} per transaction
+                          </small>
+                        </div>
+                        {requestedTier && (
+                          <div className="more-tier-next">
+                            <span>{verification.request?.status === 'pending' ? 'UNDER REVIEW' : 'NEXT TIER'}</span>
+                            <strong>Tier {requestedTier.level} · {requestedTier.name}</strong>
+                            <ul>
+                              {requestedTier.requirements.map((requirement) => <li key={requirement}>{requirement}</li>)}
+                            </ul>
+                            <small>
+                              Potential limits: deposits up to {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(requestedTier.deposit.perTransaction)} and withdrawals up to {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(requestedTier.withdrawal.perTransaction)} per transaction.
+                            </small>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                   {verification?.canSubmit && <form className="more-form" onSubmit={submitVerification}>
                     <label>Legal name<input autoComplete="name" maxLength="100" minLength="2" onChange={(event) => setVerificationForm((current) => ({ ...current, legalName: event.target.value }))} required value={verificationForm.legalName} /></label>
                     <label>Date of birth<input autoComplete="bday" max={new Date().toISOString().slice(0, 10)} onChange={(event) => setVerificationForm((current) => ({ ...current, dateOfBirth: event.target.value }))} required type="date" value={verificationForm.dateOfBirth} /></label>
-                    <label className="more-checkbox-label"><input checked={verificationForm.consent} onChange={(event) => setVerificationForm((current) => ({ ...current, consent: event.target.checked }))} required type="checkbox" /> I consent to this information being used for a manual account verification review.</label>
-                    <button className="more-detail-action" disabled={isSaving} type="submit">{isSaving ? 'Submitting…' : 'Submit for review'}</button>
+                    {verification.nextTier?.level >= 2 && <>
+                      <label>Residential address<input autoComplete="street-address" maxLength="150" minLength="2" onChange={(event) => setVerificationForm((current) => ({ ...current, addressLine: event.target.value }))} required value={verificationForm.addressLine} /></label>
+                      <label>City<input autoComplete="address-level2" maxLength="80" minLength="2" onChange={(event) => setVerificationForm((current) => ({ ...current, city: event.target.value }))} required value={verificationForm.city} /></label>
+                      <label>State<input autoComplete="address-level1" maxLength="80" minLength="2" onChange={(event) => setVerificationForm((current) => ({ ...current, state: event.target.value }))} required value={verificationForm.state} /></label>
+                    </>}
+                    {verification.nextTier?.level >= 3 && <>
+                      <label>Occupation<input autoComplete="organization-title" maxLength="100" minLength="2" onChange={(event) => setVerificationForm((current) => ({ ...current, occupation: event.target.value }))} required value={verificationForm.occupation} /></label>
+                      <label>Primary source of funds
+                        <select onChange={(event) => setVerificationForm((current) => ({ ...current, sourceOfFundsCategory: event.target.value }))} required value={verificationForm.sourceOfFundsCategory}>
+                          <option value="">Select a category</option>
+                          <option value="salary">Salary or wages</option>
+                          <option value="business_income">Business income</option>
+                          <option value="savings">Savings</option>
+                          <option value="investments">Investments</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </label>
+                    </>}
+                    <p className="more-form-note">An administrator manually reviews requests; this app does not perform identity checks. Do not enter BVN/NIN numbers or upload identity documents here. Your current tier and limits stay in place until approval through a separately approved verification process.</p>
+                    <label className="more-checkbox-label"><input checked={verificationForm.consent} onChange={(event) => setVerificationForm((current) => ({ ...current, consent: event.target.checked }))} required type="checkbox" /> I consent to the use of the information requested for this tier’s verification review.</label>
+                    <button className="more-detail-action" disabled={isSaving} type="submit">{isSaving ? 'Submitting…' : `Request Tier ${verification.nextTier?.level} review`}</button>
                   </form>}
                 </>
               )}

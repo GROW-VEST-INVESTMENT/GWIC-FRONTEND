@@ -598,11 +598,6 @@ function Dashboard() {
                 <span className="transaction-tier-kicker">VERIFICATION & LIMITS</span>
                 <h2>Tier {dashboard.wallet.tier.level} · {dashboard.wallet.tier.name}</h2>
               </div>
-              {dashboard.wallet.tier.nextTier && (
-                <Link className="transaction-tier-upgrade" to="/more">
-                  Upgrade for higher limits
-                </Link>
-              )}
             </div>
             <div className="transaction-tier-usage">
               <article>
@@ -616,16 +611,6 @@ function Dashboard() {
                 <small>{formatMoney(dashboard.wallet.tier.withdrawal.dailyRemaining, currency)} left today · {formatMoney(dashboard.wallet.tier.withdrawal.monthlyRemaining, currency)} this month</small>
               </article>
             </div>
-            {dashboard.wallet.tier.nextTier && (
-              <p>
-                {dashboard.wallet.tier.level === 0
-                  ? 'Complete identity verification to request a higher transaction tier.'
-                  : dashboard.wallet.tier.nextTier.level === 3
-                    ? 'Contact support to request enhanced verification for higher limits.'
-                    : 'Contact support to review the verification needed for the next tier.'}
-                {' '}Your tier only increases after the required checks are approved.
-              </p>
-            )}
           </section>
         )}
 
