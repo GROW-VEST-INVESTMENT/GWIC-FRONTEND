@@ -228,6 +228,11 @@ function Dashboard() {
         const result = await response.json();
         if (!response.ok) throw new Error(result.message || 'We could not confirm this deposit yet.');
         if (!isActive) return;
+        if (result.status === 'requires_approval') {
+          setWalletActionMessage(result.message || 'Your deposit is held for an admin review and is not available in your wallet.');
+          await loadDashboard();
+          return;
+        }
         setWalletActionMessage('Deposit confirmed and added to your wallet.');
         notifyUser({
           title: 'Deposit confirmed',
@@ -586,6 +591,44 @@ function Dashboard() {
           )}
         </section>
 
+        {dashboard.wallet.tier && (
+          <section aria-label="Transaction tier and limits" className="transaction-tier-card">
+            <div className="transaction-tier-heading">
+              <div>
+                <span className="transaction-tier-kicker">VERIFICATION & LIMITS</span>
+                <h2>Tier {dashboard.wallet.tier.level} · {dashboard.wallet.tier.name}</h2>
+              </div>
+              {dashboard.wallet.tier.nextTier && (
+                <Link className="transaction-tier-upgrade" to="/more">
+                  Upgrade for higher limits
+                </Link>
+              )}
+            </div>
+            <div className="transaction-tier-usage">
+              <article>
+                <strong>Deposits</strong>
+                <span>Up to {formatMoney(dashboard.wallet.tier.deposit.perTransaction, currency)} per deposit</span>
+                <small>{formatMoney(dashboard.wallet.tier.deposit.dailyRemaining, currency)} left today · {formatMoney(dashboard.wallet.tier.deposit.monthlyRemaining, currency)} this month</small>
+              </article>
+              <article>
+                <strong>Withdrawals</strong>
+                <span>Up to {formatMoney(dashboard.wallet.tier.withdrawal.perTransaction, currency)} per withdrawal</span>
+                <small>{formatMoney(dashboard.wallet.tier.withdrawal.dailyRemaining, currency)} left today · {formatMoney(dashboard.wallet.tier.withdrawal.monthlyRemaining, currency)} this month</small>
+              </article>
+            </div>
+            {dashboard.wallet.tier.nextTier && (
+              <p>
+                {dashboard.wallet.tier.level === 0
+                  ? 'Complete identity verification to request a higher transaction tier.'
+                  : dashboard.wallet.tier.nextTier.level === 3
+                    ? 'Contact support to request enhanced verification for higher limits.'
+                    : 'Contact support to review the verification needed for the next tier.'}
+                {' '}Your tier only increases after the required checks are approved.
+              </p>
+            )}
+          </section>
+        )}
+
         <section className="quick-actions" id="wallet-actions" aria-label="Account actions">
           {quickActions.map((action) => (
             <button
@@ -649,6 +692,21 @@ function Dashboard() {
                   </div>
                 </>
               )}
+              {dashboard.wallet.tier && (
+                <div className="wallet-tier-limit-note">
+                  <strong>Tier {dashboard.wallet.tier.level} · {dashboard.wallet.tier.name}</strong>
+                  <span>
+                    {walletAction === 'deposit'
+                      ? `Deposit limit: ${formatMoney(dashboard.wallet.tier.deposit.perTransaction, currency)} per transaction, ${formatMoney(dashboard.wallet.tier.deposit.dailyRemaining, currency)} remaining today.`
+                      : `Withdrawal limit: ${formatMoney(dashboard.wallet.tier.withdrawal.perTransaction, currency)} per transaction, ${formatMoney(dashboard.wallet.tier.withdrawal.dailyRemaining, currency)} remaining today.`}
+                  </span>
+                  {dashboard.wallet.tier.nextTier && (
+                    <Link to="/more">
+                      Upgrade your tier to perform higher transactions
+                    </Link>
+                  )}
+                </div>
+              )}
               <form className="wallet-action-form" onSubmit={handleWalletAction}>
                 {(walletAction === 'deposit' || withdrawalStep === 1) && (
                   <>
@@ -658,7 +716,18 @@ function Dashboard() {
                         autoComplete="off"
                         autoFocus={walletAction === 'deposit' || withdrawalStep === 1}
                         inputMode="numeric"
-                        max={walletAction === 'deposit' ? '1000000' : String(Math.floor(dashboard.wallet.balance))}
+                        max={walletAction === 'deposit'
+                          ? String(Math.min(
+                            dashboard.wallet.tier?.deposit.perTransaction ?? 1000000,
+                            dashboard.wallet.tier?.deposit.dailyRemaining ?? 1000000,
+                            dashboard.wallet.tier?.deposit.monthlyRemaining ?? 1000000,
+                          ))
+                          : String(Math.min(
+                            Math.floor(dashboard.wallet.balance),
+                            dashboard.wallet.tier?.withdrawal.perTransaction ?? Math.floor(dashboard.wallet.balance),
+                            dashboard.wallet.tier?.withdrawal.dailyRemaining ?? Math.floor(dashboard.wallet.balance),
+                            dashboard.wallet.tier?.withdrawal.monthlyRemaining ?? Math.floor(dashboard.wallet.balance),
+                          ))}
                         min="100"
                         name="amount"
                         onChange={walletAction === 'withdraw' ? (event) => setWithdrawalAmount(event.target.value) : undefined}
