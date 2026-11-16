@@ -572,6 +572,47 @@ function More() {
           </div>
         </section>
 
+        {Array.isArray(verification?.tiers) && (() => {
+          const currentTier = verification.tiers.find((tier) => tier.level === verification.currentTier);
+          const targetTierLevel = verification.request?.status === 'pending'
+            ? verification.request.requestedTier
+            : verification.nextTier?.level;
+          const targetTier = verification.tiers.find((tier) => tier.level === targetTierLevel);
+          const formatTierLimit = (amount) => new Intl.NumberFormat('en-NG', {
+            style: 'currency',
+            currency: 'NGN',
+            maximumFractionDigits: 0,
+          }).format(amount || 0);
+          return (
+            <section aria-label="Transaction tier and limits" className="more-tier-summary">
+              <div className="more-tier-current">
+                <span>TRANSACTION TIER</span>
+                <strong>Tier {verification.currentTier ?? 0} · {currentTier?.name}</strong>
+                <small>Deposits: up to {formatTierLimit(currentTier?.deposit?.perTransaction)} per transaction</small>
+                <small>Withdrawals: up to {formatTierLimit(currentTier?.withdrawal?.perTransaction)} per transaction</small>
+              </div>
+              {targetTier && (
+                <div className="more-tier-next">
+                  <span>{verification.request?.status === 'pending' ? 'UNDER REVIEW' : 'NEXT TIER'}</span>
+                  <strong>Tier {targetTier.level} · {targetTier.name}</strong>
+                  {targetTier.requirements?.length > 0 && (
+                    <ul>
+                      {targetTier.requirements.map((requirement) => <li key={requirement}>{requirement}</li>)}
+                    </ul>
+                  )}
+                  <small>
+                    Potential deposit limit: {formatTierLimit(targetTier.deposit?.perTransaction)} per transaction.
+                    Potential withdrawal limit: {formatTierLimit(targetTier.withdrawal?.perTransaction)} per transaction.
+                  </small>
+                </div>
+              )}
+              <button className="more-detail-action" onClick={() => setActivePanel('kyc')} type="button">
+                {verification?.canSubmit ? 'Review verification options' : 'View verification status'}
+              </button>
+            </section>
+          );
+        })()}
+
         {accountError && !activePanel && (
           <div className="more-error" role="alert">
             <span>{accountError}</span>
@@ -678,39 +719,6 @@ function More() {
                       </span>
                     </div>}
                   {verification?.notice && <p className="more-form-note">{verification.notice}</p>}
-                  {verification?.tiers && (() => {
-                    const currentTier = verification.tiers.find((tier) => tier.level === verification.currentTier);
-                    const targetTierLevel = verification.request?.status === 'pending'
-                      ? verification.request.requestedTier
-                      : verification.nextTier?.level;
-                    const requestedTier = verification.tiers.find((tier) => tier.level === targetTierLevel);
-                    return (
-                      <div className="more-tier-summary">
-                        <div className="more-tier-current">
-                          <span>YOUR CURRENT TIER</span>
-                          <strong>Tier {verification.currentTier} · {currentTier?.name}</strong>
-                          <small>
-                            Deposits: up to {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(currentTier?.deposit.perTransaction || 0)} per transaction
-                          </small>
-                          <small>
-                            Withdrawals: up to {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(currentTier?.withdrawal.perTransaction || 0)} per transaction
-                          </small>
-                        </div>
-                        {requestedTier && (
-                          <div className="more-tier-next">
-                            <span>{verification.request?.status === 'pending' ? 'UNDER REVIEW' : 'NEXT TIER'}</span>
-                            <strong>Tier {requestedTier.level} · {requestedTier.name}</strong>
-                            <ul>
-                              {requestedTier.requirements.map((requirement) => <li key={requirement}>{requirement}</li>)}
-                            </ul>
-                            <small>
-                              Potential limits: deposits up to {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(requestedTier.deposit.perTransaction)} and withdrawals up to {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(requestedTier.withdrawal.perTransaction)} per transaction.
-                            </small>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
                   {verification?.canSubmit && <form className="more-form" onSubmit={submitVerification}>
                     <label>Legal name<input autoComplete="name" maxLength="100" minLength="2" onChange={(event) => setVerificationForm((current) => ({ ...current, legalName: event.target.value }))} required value={verificationForm.legalName} /></label>
                     <label>Date of birth<input autoComplete="bday" max={new Date().toISOString().slice(0, 10)} onChange={(event) => setVerificationForm((current) => ({ ...current, dateOfBirth: event.target.value }))} required type="date" value={verificationForm.dateOfBirth} /></label>

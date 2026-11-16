@@ -320,9 +320,14 @@ function Dashboard() {
       }
       setBanks(result.banks);
     } catch (requestError) {
-      setWalletActionError(requestError instanceof TypeError
+      const message = requestError instanceof TypeError
         ? 'We could not reach Kalma Capital. Check your connection and try again.'
-        : requestError.message);
+        : requestError.message;
+      setWalletActionError(
+        /tier|limit|allowance/i.test(message)
+          ? 'This amount exceeds your current transaction allowance. Review details in Profile.'
+          : message,
+      );
     } finally {
       setIsLoadingBanks(false);
     }
@@ -591,29 +596,6 @@ function Dashboard() {
           )}
         </section>
 
-        {dashboard.wallet.tier && (
-          <section aria-label="Transaction tier and limits" className="transaction-tier-card">
-            <div className="transaction-tier-heading">
-              <div>
-                <span className="transaction-tier-kicker">VERIFICATION & LIMITS</span>
-                <h2>Tier {dashboard.wallet.tier.level} · {dashboard.wallet.tier.name}</h2>
-              </div>
-            </div>
-            <div className="transaction-tier-usage">
-              <article>
-                <strong>Deposits</strong>
-                <span>Up to {formatMoney(dashboard.wallet.tier.deposit.perTransaction, currency)} per deposit</span>
-                <small>{formatMoney(dashboard.wallet.tier.deposit.dailyRemaining, currency)} left today · {formatMoney(dashboard.wallet.tier.deposit.monthlyRemaining, currency)} this month</small>
-              </article>
-              <article>
-                <strong>Withdrawals</strong>
-                <span>Up to {formatMoney(dashboard.wallet.tier.withdrawal.perTransaction, currency)} per withdrawal</span>
-                <small>{formatMoney(dashboard.wallet.tier.withdrawal.dailyRemaining, currency)} left today · {formatMoney(dashboard.wallet.tier.withdrawal.monthlyRemaining, currency)} this month</small>
-              </article>
-            </div>
-          </section>
-        )}
-
         <section className="quick-actions" id="wallet-actions" aria-label="Account actions">
           {quickActions.map((action) => (
             <button
@@ -645,7 +627,11 @@ function Dashboard() {
             {withdrawalResult?.reference && <Link to="/activity">View activity</Link>}
           </div>
         )}
-        {walletActionError && !walletAction && <p className="dashboard-message is-error" role="alert">{walletActionError}</p>}
+        {walletActionError && !walletAction && (
+          <p className="dashboard-message is-error" role="alert">
+            {walletActionError}{walletActionError.includes('Profile') && <> <Link to="/more">Open Profile</Link></>}
+          </p>
+        )}
 
         {walletAction && (
           <div className="wallet-dialog-backdrop" onMouseDown={(event) => {
@@ -676,21 +662,6 @@ function Dashboard() {
                     <small>Only confirmed wallet funds are available.</small>
                   </div>
                 </>
-              )}
-              {dashboard.wallet.tier && (
-                <div className="wallet-tier-limit-note">
-                  <strong>Tier {dashboard.wallet.tier.level} · {dashboard.wallet.tier.name}</strong>
-                  <span>
-                    {walletAction === 'deposit'
-                      ? `Deposit limit: ${formatMoney(dashboard.wallet.tier.deposit.perTransaction, currency)} per transaction, ${formatMoney(dashboard.wallet.tier.deposit.dailyRemaining, currency)} remaining today.`
-                      : `Withdrawal limit: ${formatMoney(dashboard.wallet.tier.withdrawal.perTransaction, currency)} per transaction, ${formatMoney(dashboard.wallet.tier.withdrawal.dailyRemaining, currency)} remaining today.`}
-                  </span>
-                  {dashboard.wallet.tier.nextTier && (
-                    <Link to="/more">
-                      Upgrade your tier to perform higher transactions
-                    </Link>
-                  )}
-                </div>
               )}
               <form className="wallet-action-form" onSubmit={handleWalletAction}>
                 {(walletAction === 'deposit' || withdrawalStep === 1) && (
@@ -838,7 +809,11 @@ function Dashboard() {
                     <button className="withdrawal-back-button" onClick={() => { setWithdrawalStep(2); setVerifiedBankAccount(null); setWithdrawalRequestKey(''); }} type="button">Back to bank details</button>
                   </>
                 )}
-                {walletActionError && <p className="dashboard-message is-error" role="alert">{walletActionError}</p>}
+                {walletActionError && (
+                  <p className="dashboard-message is-error" role="alert">
+                    {walletActionError}{walletActionError.includes('Profile') && <> <Link to="/more">Open Profile</Link></>}
+                  </p>
+                )}
                 <button className="dashboard-button" disabled={isWalletActionPending || (walletAction === 'withdraw' && withdrawalStep === 2 && (isLoadingBanks || (banks.length === 0 && savedBanks.length === 0)))} type="submit">
                   {isWalletActionPending
                     ? walletAction === 'withdraw' && withdrawalStep === 2 ? 'Verifying account…' : 'Processing…'
