@@ -43,6 +43,7 @@ function AccountAccess() {
     name: '',
     email: '',
     phone: '',
+    promoCode: searchParams.get('ref') || '',
     goal: '',
     product: productOptions.some((option) => option.value === requestedProduct) ? requestedProduct : 'undecided',
     password: '',
@@ -72,7 +73,7 @@ function AccountAccess() {
     const formData = new FormData(form);
     const requestData = isLogin
       ? Object.fromEntries(formData.entries())
-      : signupForm;
+      : { ...signupForm, promoCode: signupForm.promoCode.trim().toUpperCase() };
 
     try {
       const response = await fetch(`/api/auth/${isLogin ? 'login' : 'register'}`, {
@@ -212,6 +213,18 @@ function AccountAccess() {
               <>
                 <label className="field-label" htmlFor="phone">Phone number <span>(optional)</span></label>
                 <input className="access-input" autoComplete="tel" id="phone" maxLength="32" name="phone" onChange={(event) => setSignupForm((current) => ({ ...current, phone: event.target.value }))} placeholder="+234 800 000 0000" type="tel" value={signupForm.phone} />
+                <label className="field-label" htmlFor="promo-code">Partner promo code <span>(optional)</span></label>
+                <input
+                  className="access-input"
+                  autoComplete="off"
+                  id="promo-code"
+                  maxLength="24"
+                  name="promoCode"
+                  onChange={(event) => setSignupForm((current) => ({ ...current, promoCode: event.target.value.toUpperCase() }))}
+                  placeholder="Enter a partner code"
+                  value={signupForm.promoCode}
+                />
+                <small className="access-help-text">Have a Kalma Connect partner’s code? Add it to connect your account to their referral.</small>
               </>
             )}
 
@@ -256,6 +269,7 @@ function AccountAccess() {
                   <div><dt>Email</dt><dd>{signupForm.email}</dd></div>
                   <div><dt>Goal</dt><dd>{signupForm.goal}</dd></div>
                   <div><dt>Explore</dt><dd>{productOptions.find((option) => option.value === signupForm.product)?.title}</dd></div>
+                  {signupForm.promoCode && <div><dt>Partner code</dt><dd>{signupForm.promoCode}</dd></div>}
                 </dl>
                 <button className="signup-edit-link" onClick={() => setSignupStep(0)} type="button">Edit profile</button>
                 <button className="signup-edit-link" onClick={() => setSignupStep(1)} type="button">Edit choices</button>
