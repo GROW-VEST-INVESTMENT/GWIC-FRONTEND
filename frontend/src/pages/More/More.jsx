@@ -4,7 +4,7 @@ import BrandMark from '../../components/BrandMark';
 import './More.css';
 
 const settings = [
-  { id: 'personal', icon: 'person', title: 'Personal Information', description: 'Update your name and phone number.' },
+  { id: 'personal', icon: 'person', title: 'Personal Information', description: 'Update your phone number or request a name correction.' },
   { id: 'kyc', icon: 'shield', title: 'Transaction tier & limits', description: 'View your limits and manage verification for a higher tier.' },
   { id: 'banks', icon: 'bank', title: 'Linked Bank Accounts', description: 'Manage verified accounts for wallet withdrawals.' },
   { id: 'security', icon: 'lock', title: 'Security', description: 'Change your password and protect your account.' },
@@ -82,6 +82,9 @@ function More() {
   });
   const [notificationDelivery, setNotificationDelivery] = useState({ email: false, push: false });
   const [verification, setVerification] = useState(null);
+  const [nameChange, setNameChange] = useState(null);
+  const [nameChangeLoading, setNameChangeLoading] = useState(false);
+  const [nameChangeForm, setNameChangeForm] = useState({ requestedName: '', reason: '' });
   const [linkedBanks, setLinkedBanks] = useState([]);
   const [bankDirectory, setBankDirectory] = useState([]);
   const [supportRequests, setSupportRequests] = useState([]);
@@ -240,6 +243,10 @@ function More() {
           } else {
             setBankDirectory(directory.value.banks);
           }
+        } else if (activePanel === 'personal') {
+          setNameChangeLoading(true);
+          const result = await accountRequest('/api/account/name-change', { signal: controller.signal });
+          setNameChange(result);
         } else if (activePanel === 'help') {
           const result = await accountRequest('/api/account/support', { signal: controller.signal });
           setSupportRequests(result.requests);
@@ -256,6 +263,7 @@ function More() {
           setActionError(requestError.message);
         }
       } finally {
+        if (activePanel === 'personal' && !controller.signal.aborted) setNameChangeLoading(false);
         if (!controller.signal.aborted) setBankLoading(false);
       }
     }
@@ -350,13 +358,24 @@ function More() {
     }
   }
 
-  function requestNameCorrection() {
-    setSupportForm({
-      category: 'account',
-      subject: 'Request account name correction',
-      message: 'I need to request a correction to the name on my account. Please let me know how to verify the correct legal name.',
-    });
-    setActivePanel('help');
+  async function submitNameChange(event) {
+    event.preventDefault();
+    setIsSaving(true);
+    setActionError('');
+    setActionMessage('');
+    try {
+      const result = await accountRequest('/api/account/name-change', {
+        method: 'POST',
+        body: nameChangeForm,
+      });
+      setNameChange((current) => ({ ...current, request: result.request }));
+      setNameChangeForm({ requestedName: '', reason: '' });
+      setActionMessage(result.message);
+    } catch (requestError) {
+      showActionError(requestError);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   async function submitVerification(event) {
@@ -647,13 +666,33 @@ function More() {
                       </div>
                       <form className="more-form" onSubmit={saveProfile}>
                       <label>Full name<input autoComplete="name" readOnly value={account.name} /></label>
-                      <small className="more-form-note">Your account name is locked because it must match the name on your verified bank account. For a correction, contact support.</small>
+                      <small className="more-form-note">Your account name can only be updated after an administrator reviews a name-correction request.</small>
                       <label>Email address<input autoComplete="email" readOnly value={account.email} /></label>
                       <small className="more-form-note">Email changes require a separate verification flow and cannot be changed here.</small>
                       <label>Phone number<input autoComplete="tel" maxLength="32" onChange={(event) => setProfileForm((current) => ({ ...current, phone: event.target.value }))} type="tel" value={profileForm.phone} /></label>
                       <button className="more-detail-action" disabled={isSaving} type="submit">{isSaving ? 'Saving…' : 'Save profile'}</button>
-                      <button className="more-detail-action is-secondary" onClick={requestNameCorrection} type="button">Request a name correction</button>
                       </form>
+                      {nameChange?.request && (
+                        <div className={`more-status-card ${nameChange.request.status === 'approved' ? 'is-complete' : ''}`}>
+                          <MoreIcon name="person" />
+                          <span>
+                            <strong>Name correction {nameChange.request.status}</strong>
+                            <small>{nameChange.request.currentName} → {nameChange.request.requestedName}</small>
+                            {nameChange.request.reviewNote && <small>Administrator note: {nameChange.request.reviewNote}</small>}
+                          </span>
+                        </div>
+                      )}
+                      {nameChangeLoading
+                        ? <p aria-live="polite">Loading name-correction status…</p>
+                        : nameChange?.request?.status !== 'pending' && nameChange && (
+                        <form className="more-form" onSubmit={submitNameChange}>
+                          <h3>Request a name correction</h3>
+                          <label>Full legal name<input autoComplete="name" maxLength="100" minLength="3" onChange={(event) => setNameChangeForm((current) => ({ ...current, requestedName: event.target.value }))} required value={nameChangeForm.requestedName} /></label>
+                          <label>Reason for the correction<textarea maxLength="1000" minLength="10" onChange={(event) => setNameChangeForm((current) => ({ ...current, reason: event.target.value }))} required rows="3" value={nameChangeForm.reason} /></label>
+                          <p className="more-form-note">An administrator will review your request and may need to verify your identity through a separate approved process. Do not upload identity documents here. If approved, your linked bank account names must match the corrected name; you may need to remove and relink them before withdrawing.</p>
+                          <button className="more-detail-action" disabled={isSaving} type="submit">{isSaving ? 'Submitting…' : 'Submit name-correction request'}</button>
+                        </form>
+                      )}
                     </>}
                   {!isLoadingAccount && !account && <p role="alert">Your account details could not be loaded. Use Retry above to try again.</p>}
                 </>
